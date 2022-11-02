@@ -1,0 +1,8 @@
+.project
+.settings
+_build/*
+deps/*
+files-info/*
+doc/*
+*.tar
+*.tar.gz
