@@ -32,11 +32,29 @@ defmodule StorjDB.ConnectionConfig do
               """
     "#{base_path}/#{@sample_filename}" 
       |> FileUtil.write(content)
+    base_path 
+      |> write_path_info()
+  end
+  
+  defp write_path_info(base_path) do
     """
     A sample config file was writted to '#{base_path}/#{@sample_filename}'.
     Please edit this file and rename to '#{base_path}/#{@config_filename}' 
     """ 
       |> IO.inspect()
+  
+    cond do
+      (base_path == ".")
+        -> """
+           Maybe you wish configure you elixir app config file to map 
+           the Storj DB root path to an absolute path:
+           
+           config :storj_db, path: "/var/www/html/my_app_dir"
+           """
+             |> IO.inspect()
+      true 
+        -> :ok
+    end
   end
   
   defp init_connection_to_ets(content,base_path) do
