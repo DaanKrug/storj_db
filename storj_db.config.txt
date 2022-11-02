@@ -1,2 +1,0 @@
-bucket_name=my_bucket
-database_name=my_database

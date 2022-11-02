@@ -2,7 +2,9 @@ defmodule StorjDB.Service do
 
   @moduledoc false
 
+  require Logger
   use GenServer
+  
   
   alias Krug.EtsUtil
   alias StorjDB.ConnectionConfig
@@ -21,7 +23,8 @@ defmodule StorjDB.Service do
         -> path
              |> ConnectionConfig.config_connection()
     end
-    IO.inspect("Started StorjDB.Service ...")
+    "Started StorjDB.Service ..."
+      |> Logger.info()
     {:ok, []}
   end
   

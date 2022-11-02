@@ -14,9 +14,11 @@ defmodule StorjDB.ConnectionConfigTest do
     "./storj_db.config.txt" 
       |> FileUtil.drop_file()
     message = """
-              A sample config file was writted to './storj_db.config.sample.txt'.
-              Please edit this file and rename to './storj_db.config.txt' 
-              """
+			  Maybe you wish configure you elixir app config file to map 
+			  the Storj DB root path to an absolute path:
+			  
+			  config :storj_db, path: "/var/www/html/my_app_dir"
+			  """
     result = ConnectionConfig.config_connection()
     assert result == message
   end
@@ -42,14 +44,24 @@ defmodule StorjDB.ConnectionConfigTest do
     "./storj_db.config.txt" 
       |> FileUtil.drop_file()
     message = """
-              A sample config file was writted to './storj_db.config.sample.txt'.
-              Please edit this file and rename to './storj_db.config.txt' 
-              """
+			  Maybe you wish configure you elixir app config file to map 
+			  the Storj DB root path to an absolute path:
+			  
+			  config :storj_db, path: "/var/www/html/my_app_dir"
+			  """
     result = ConnectionConfig.config_connection()
     assert result == message
     File.rename("./storj_db.config.sample.txt","./storj_db.config.txt")
     result = ConnectionConfig.config_connection()
-    assert result == ["my_bucket", "my_database", nil]
+    config = %{
+      "tables" => [
+    	%{"last_file" => 0, 
+    	  "rows_perfile" => 100, 
+    	  "table_name" => "table_1"
+    	}
+      ]
+    }
+    assert result == config
   end
 
 end
