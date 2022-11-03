@@ -4,13 +4,12 @@ defmodule StorjDB.FileService do
 
   alias Krug.StringUtil
   alias Krug.FileUtil
+  alias Krug.EtsUtil
   alias StorjDB.ConnectionConfig
   
   
   def read_file_content(bucket_name,filename) do
-    dest_path = ConnectionConfig.read_database_config_path()
-    destination_file = download_file(bucket_name,filename,dest_path)
-    # destination_file = "#{dest_path}/#{filename}" // TODO: remove after tests
+    destination_file = read_destination_file(bucket_name,filename)
     cond do
       (nil == destination_file)
         -> ""
@@ -25,8 +24,25 @@ defmodule StorjDB.FileService do
     file_path = "#{dest_path}/#{filename}"
     file_path 
       |> FileUtil.write(content)
-    bucket_name
-      |> store_file(file_path)
+    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+    cond do
+      (only_local_disk == 1 or only_local_disk == "1")
+        -> :ok
+      true
+        -> bucket_name
+             |> store_file(file_path)
+    end
+  end
+  
+  defp read_destination_file(bucket_name,filename) do
+    dest_path = ConnectionConfig.read_database_config_path()
+    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+    cond do
+      (only_local_disk == 1 or only_local_disk == "1")
+        -> "#{dest_path}/#{filename}"
+      true
+        -> download_file(bucket_name,filename,dest_path)
+    end
   end
 
   defp store_file(bucket_name,file_path) do
