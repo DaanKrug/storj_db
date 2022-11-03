@@ -6,15 +6,38 @@ defmodule StorjDB.ConnectionConfig do
   alias Krug.EtsUtil
   alias Krug.StructUtil
   alias Krug.StringUtil
-  alias StorjDB.FileService  
   alias StorjDB.DatabaseSchema
   
   
   @config_filename "storj_db.config.txt"
-  @sample_filename "storj_db.config.sample.txt"
 
 
-  def config_connection(base_path \\ ".") do
+  def read_database_config_path() do
+    path = Application.get_env(:storj_db, :path)
+    cond do
+      (nil == path)
+        -> "."
+             |> create_data_dir()
+      true 
+        -> path
+             |> create_data_dir()
+    end
+  end
+  
+  defp create_data_dir(path) do
+    data_dir = "#{path}/storj_db_data_files"
+    cond do
+      (File.exists?(data_dir))
+        -> :ok
+      true
+        -> data_dir
+             |> FileUtil.create_dir()
+    end
+    data_dir
+  end
+  
+  def config_connection() do
+    base_path = read_database_config_path()
     content = "#{base_path}/#{@config_filename}" 
                 |> FileUtil.read_file()
     cond do
@@ -28,16 +51,18 @@ defmodule StorjDB.ConnectionConfig do
   end
   
   defp init_connection_sample(base_path) do
-    database_schema = DatabaseSchema.new()
-                        |> DatabaseSchema.add_table("table_1",100)
+    database_schema_path = "database_schema.txt"
+    DatabaseSchema.update_schema("table_1",100)
     content = """
               bucket_name=sample_database
-              database_schema=#{database_schema |> Poison.encode!()}
+              database_schema=#{database_schema_path}
               """
-    "#{base_path}/#{@sample_filename}" 
+    "#{base_path}/#{@config_filename}" 
       |> FileUtil.write(content)
     base_path 
       |> write_path_info()
+    content
+      |> init_connection_to_ets()
   end
   
   defp write_path_info(base_path) do
@@ -52,8 +77,8 @@ defmodule StorjDB.ConnectionConfig do
   
   defp write_path_info3(base_path) do
     """
-    A sample config file was writted to '#{base_path}/#{@sample_filename}'.
-    Please edit this file and rename to '#{base_path}/#{@config_filename}' 
+    A sample config file was writted to '#{base_path}/#{@config_filename}'.
+    Please edit this file to match your configurations 
     """ 
       |> IO.inspect()
   end
@@ -73,35 +98,11 @@ defmodule StorjDB.ConnectionConfig do
              |> StringUtil.split("\n")
     bucket_name = "bucket_name" 
                      |> StructUtil.get_key_par_value_from_list(list)
-    database_schema = list
-                        |> read_database_schema()
-    EtsUtil.store_in_cache(:storj_db_app,"bucket_name",bucket_name)
-    EtsUtil.store_in_cache(:storj_db_app,"database_schema",database_schema)
-    bucket_name
-      |> IO.inspect()
-    database_schema
-      |> IO.inspect()
-  end
-  
-  defp read_database_schema(list) do
     database_schema = "database_schema" 
                         |> StructUtil.get_key_par_value_from_list(list)
-    cond do
-      (nil == database_schema
-        or database_schema == "")
-          -> ""
-      true
-        -> database_schema
-             |> Poison.decode!()
-    end
+    EtsUtil.store_in_cache(:storj_db_app,"bucket_name",bucket_name)
+    EtsUtil.store_in_cache(:storj_db_app,"database_schema",database_schema)
+    :ok
   end
-
+ 
 end
-
-
-
-
-
-
-
-

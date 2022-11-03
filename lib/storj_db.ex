@@ -6,8 +6,9 @@ defmodule StorjDB do
   Documentation for "Storj DB" utilitaries modules.
   """
   
-  def echo() do
-    Service.echo()
+  def create(table,object) do
+    Service.create(table,object)
   end
+  
   
 end

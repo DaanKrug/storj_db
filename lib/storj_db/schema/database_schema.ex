@@ -3,6 +3,9 @@ defmodule StorjDB.DatabaseSchema do
   @moduledoc false
 
   alias Krug.MapUtil
+  alias Krug.EtsUtil
+  alias StorjDB.FileService
+  alias StorjDB.ConnectionConfig
 
   def new() do
     %{
@@ -10,21 +13,71 @@ defmodule StorjDB.DatabaseSchema do
     }
   end
   
-  def add_table(database_schema,table_name,rows_perfile \\ 1000) do
+  def read_table_schema(table_name) do
+    table = read_database_schema() 
+              |> search_table_in_schema(table_name)
+    cond do
+      (nil == table)
+        -> table_name
+             |> update_schema(1000,0,0,0,true)
+      true
+        -> table
+    end
+  end
+  
+  def update_schema(table_name,rows_perfile \\ 1000,last_file \\ 0,
+                    total_rows \\ 0, last_id \\ 0, return_table \\ false) do
+    database_schema = read_database_schema()
+                        |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
+    write_database_schema(database_schema)
+    cond do
+      (return_table)
+        -> database_schema 
+             |> search_table_in_schema(table_name)
+      true
+        -> :ok
+    end
+  end
+  
+  defp write_database_schema(database_schema) do
+    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+    content = database_schema 
+                |> Poison.encode!()
+    FileService.write_file_content(bucket_name,filename,content)
+  end
+  
+  defp read_database_schema() do
+    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+    database_schema = FileService.read_file_content(bucket_name,filename)
+    cond do
+      (nil == database_schema or database_schema == "")
+        -> new()
+      true
+        -> database_schema
+             |> Poison.decode!()
+    end
+  end
+  
+  defp update_schema2(database_schema,table_name,rows_perfile,last_file,total_rows,last_id) do
     table = database_schema 
               |> search_table_in_schema(table_name)
     cond do
       (nil == table)
         -> database_schema 
-             |> add_table2(table_name,rows_perfile)
+             |> add_table(table_name,rows_perfile)
       true
         -> table 
              |> MapUtil.replace(:rows_perfile, rows_perfile)
+             |> MapUtil.replace(:last_file, last_file)
+             |> MapUtil.replace(:total_rows, total_rows)
+             |> MapUtil.replace(:last_id, last_id)
              |> update_tables(database_schema)
     end
   end
   
-  defp add_table2(database_schema,table_name,rows_perfile) do
+  defp add_table(database_schema,table_name,rows_perfile) do
     tables = database_schema
                |> MapUtil.get(:tables)
     tables = [new_table(table_name,rows_perfile) | tables]
@@ -37,7 +90,9 @@ defmodule StorjDB.DatabaseSchema do
     %{
       table_name: table_name,
       rows_perfile: rows_perfile,
-      last_file: 0
+      last_file: 0,
+      total_rows: 0,
+      last_id: 0
     }
   end
   
@@ -75,9 +130,14 @@ defmodule StorjDB.DatabaseSchema do
   end
   
   defp search_table_in_schema(database_schema,table_name) do
-    database_schema
-      |> MapUtil.get(:tables)
-      |> search_table_in_schema2(table_name)
+    cond do
+      (nil == database_schema)
+        -> nil
+      true
+        -> database_schema
+             |> MapUtil.get(:tables)
+             |> search_table_in_schema2(table_name)
+    end
   end
   
   defp search_table_in_schema2(tables,table_name) do
@@ -97,17 +157,5 @@ defmodule StorjDB.DatabaseSchema do
   end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
 
 

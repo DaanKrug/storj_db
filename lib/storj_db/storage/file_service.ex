@@ -3,8 +3,33 @@ defmodule StorjDB.FileService do
   @moduledoc false
 
   alias Krug.StringUtil
+  alias Krug.FileUtil
+  alias StorjDB.ConnectionConfig
+  
+  
+  def read_file_content(bucket_name,filename) do
+    dest_path = ConnectionConfig.read_database_config_path()
+    destination_file = download_file(bucket_name,filename,dest_path)
+    # destination_file = "#{dest_path}/#{filename}" // TODO: remove after tests
+    cond do
+      (nil == destination_file)
+        -> ""
+      true
+        -> destination_file
+             |> FileUtil.read_file()
+    end
+  end
+  
+  def write_file_content(bucket_name,filename,content) do
+    dest_path = ConnectionConfig.read_database_config_path()
+    file_path = "#{dest_path}/#{filename}"
+    file_path 
+      |> FileUtil.write(content)
+    bucket_name
+      |> store_file(file_path)
+  end
 
-  def store_file(bucket_name,file_path) do
+  defp store_file(bucket_name,file_path) do
     executable = "uplink"
     arguments = ["cp",file_path,"sj://#{bucket_name}"]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
@@ -28,7 +53,7 @@ defmodule StorjDB.FileService do
     "sj://#{bucket_name}/#{filename}"
   end
   
-  def drop_file(bucket_name,filename) do
+  defp drop_file(bucket_name,filename) do
     storj_link = "sj://#{bucket_name}/#{filename}"
     executable = "uplink"
     arguments = ["rm",storj_link]
@@ -43,7 +68,7 @@ defmodule StorjDB.FileService do
     end
   end
   
-  def download_file(bucket_name,filename,dest_path) do
+  defp download_file(bucket_name,filename,dest_path) do
     storj_link = "sj://#{bucket_name}/#{filename}"
     destination_file = "#{dest_path}/#{filename}"
     executable = "uplink"
@@ -55,8 +80,8 @@ defmodule StorjDB.FileService do
       (!(String.contains?(result,"Downloaded "))) 
         -> nil
       true 
-        -> true
+        -> destination_file
     end
   end
-  
+ 
 end

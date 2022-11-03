@@ -4,5 +4,6 @@ _build/*
 deps/*
 files-info/*
 doc/*
+storj_db_data_files/*
 *.tar
 *.tar.gz
