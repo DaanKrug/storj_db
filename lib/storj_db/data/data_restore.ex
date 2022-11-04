@@ -9,8 +9,6 @@ defmodule StorjDB.DataRestore do
              |> Map.keys()
   end
   
-  
-  
   defp match_criteria() do
     # DataCommon.match_id(object_criteria,object)
     # DataCommon.match_key(object_criteria,object,key)
@@ -43,7 +41,7 @@ defmodule StorjDB.DataRestore do
                |> hd()
     objects = objects 
                 |> tl()
-    match = match_keys(object_criteria,object,keys,single_match)
+    match = DataCommon.match_keys(object_criteria,object,keys,single_match)
     cond do
       (!match) 
         -> object_criteria

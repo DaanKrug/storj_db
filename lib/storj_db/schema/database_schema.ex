@@ -5,7 +5,7 @@ defmodule StorjDB.DatabaseSchema do
   alias Krug.MapUtil
   alias Krug.EtsUtil
   alias StorjDB.FileService
-  alias StorjDB.ConnectionConfig
+  
 
   def new() do
     %{
@@ -23,6 +23,19 @@ defmodule StorjDB.DatabaseSchema do
       true
         -> table
     end
+  end
+  
+  def update_schema_by_schema_info(schema_info) do
+    [
+      table_name,
+      rows_perfile,
+      last_file,
+      total_rows, 
+      last_id, 
+      return_table
+    ] = schema_info
+    table_name
+      |> update_schema(rows_perfile,last_file,total_rows, last_id, return_table)
   end
   
   def update_schema(table_name,rows_perfile \\ 1000,last_file \\ 0,

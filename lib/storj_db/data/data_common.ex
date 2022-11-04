@@ -4,18 +4,9 @@ defmodule StorjDB.DataCommon do
   
   alias Krug.NumberUtil
   alias Krug.MapUtil
-  
-  def calculate_last_file(rows_perfile,last_file,objects) do
-    cond do
-      (Enum.empty?(objects))
-        -> last_file
-      (length(objects) > rows_perfile)
-        -> last_file + 1
-      true
-        -> last_file
-    end
-  end
-  
+  alias StorjDB.DatabaseSchema
+  alias StorjDB.FileService
+ 
   def match_id(object_criteria,object) do
     id0 = object_criteria 
             |> MapUtil.get(:id)
@@ -28,7 +19,6 @@ defmodule StorjDB.DataCommon do
         -> (id0 |> NumberUtil.to_integer()) == (id1 |> NumberUtil.to_integer())
     end
   end
-  
   
   def match_keys(object_criteria,object,keys,single_match) do
     cond do
@@ -66,5 +56,56 @@ defmodule StorjDB.DataCommon do
     end
   end
   
+  #==============================
+  
+  def read_table_info(table_name) do
+    table_info = table_name
+                   |> DatabaseSchema.read_table_schema()
+    last_file = table_info 
+                |> MapUtil.get(:last_file)    
+    rows_perfile = table_info 
+                   |> MapUtil.get(:rows_perfile)
+    total_rows = table_info 
+                   |> MapUtil.get(:total_rows)
+    last_id = table_info 
+                |> MapUtil.get(:last_id)
+    [last_file,rows_perfile,total_rows,last_id]
+  end
+  
+  def read_table_objects(bucket_name,table_name,file_number) do
+    filename = "#{table_name}_#{file_number}.txt"
+    content = bucket_name
+      |> FileService.read_file_content(filename)
+    cond do
+      (nil == content or content == "")
+        -> []
+      true
+        -> content
+             |> Poison.decode!()
+    end
+  end
+  
+  #==============================
+  
+  def store_table_objects(bucket_name,objects_to_save,file_number,schema_info) do
+    content = objects_to_save
+                |> Poison.encode!() 
+    table_name = schema_info
+                   |> hd()
+    filename = "#{table_name}_#{file_number}.txt"
+    bucket_name
+      |> FileService.write_file_content(filename,content)
+    schema_info
+      |> DatabaseSchema.update_schema_by_schema_info()
+  end
+  
+  def calculate_last_file(rows_perfile,last_file,objects) do
+    cond do
+      (length(objects) > rows_perfile)
+        -> last_file + 1
+      true
+        -> last_file
+    end
+  end
   
 end

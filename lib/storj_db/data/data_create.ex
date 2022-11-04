@@ -2,53 +2,59 @@ defmodule StorjDB.DataCreate do
 
   @moduledoc false
   
-  alias Krug.StringUtil
   alias Krug.EtsUtil
-  alias StorjDB.DatabaseSchema
   alias StorjDB.DataCommon
   alias Krug.MapUtil
-  alias StorjDB.FileService
   
-  
+ 
   def create(table_name,object) do
-    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
-    table_info = table_name
-                   |> DatabaseSchema.read_table_schema()
-    last_file = table_info 
-                |> MapUtil.get(:last_file)    
-    rows_perfile = table_info 
-                   |> MapUtil.get(:rows_perfile)
-    total_rows = table_info 
-                   |> MapUtil.get(:total_rows)
-    last_id = table_info 
-                |> MapUtil.get(:last_id)
+    [
+      last_file,
+      rows_perfile,
+      total_rows,
+      last_id
+    ] = table_name 
+          |> DataCommon.read_table_info()
     id = last_id + 1
     object = object 
                |> MapUtil.replace(:id,id)
-    filename = "#{table_name}_#{last_file}.txt"
-    objects = bucket_name
-                |> FileService.read_file_content(filename)
-                |> StringUtil.split("\n")
+    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    objects = bucket_name  
+                |> DataCommon.read_table_objects(table_name,last_file)
+    [file_number,objects_to_save] = 
+      last_file
+        |> prepare_object_to_store(objects,object,rows_perfile)
+    schema_info = [
+      table_name,
+      rows_perfile,
+      file_number,
+      total_rows + 1,
+      id,
+      false
+    ]
+    DataCommon.store_table_objects(bucket_name,objects_to_save,file_number,schema_info)
+  end
+  
+  defp prepare_object_to_store(last_file,objects,object,rows_perfile) do
+    cond do
+      (Enum.empty?(objects))
+        -> [last_file,[object]]
+      true
+        -> last_file
+             |> prepare_object_to_store2(objects,object,rows_perfile)
+    end
+  end
+  
+  defp prepare_object_to_store2(last_file,objects,object,rows_perfile) do
     last_file = rows_perfile
                   |> DataCommon.calculate_last_file(last_file,objects)
-    bucket_name
-      |> append_object_to_file(table_name,objects,object,rows_perfile,last_file)
-    table_name
-      |> DatabaseSchema.update_schema(rows_perfile,last_file,total_rows + 1,id,false)
-  end
-  
-  defp append_object_to_file(bucket_name,table_name,objects,object,rows_perfile,last_file) do
-    content = [
-      object |> Poison.encode!() 
+    objects_to_save = [
+      object
       | objects |> Enum.reverse()
-    ]
-      |> Enum.reverse()
-      |> Enum.join("\n")
-    filename = "#{table_name}_#{last_file}.txt"
-    bucket_name
-      |> FileService.write_file_content(filename,content)
+    ]         
+      |> Enum.reverse() 
+    [last_file,objects_to_save]
   end
-  
   
 end
 
