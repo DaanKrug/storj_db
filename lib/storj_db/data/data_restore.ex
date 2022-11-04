@@ -19,16 +19,30 @@ defmodule StorjDB.DataRestore do
       last_id
     ] = table_name 
           |> DataCommon.read_table_info()
-    keys = object_criteria 
-             |> Map.keys()
+    object_criteria = %{
+      id: id
+    }
+    keys = [:id]
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     cond do
       (sort_desc)
         -> bucket_name
-             |> list_from_filepages_desc(table_name,object_criteria,max_results,single_match,keys,last_file)
+             |> list_from_filepages_desc(table_name,object_criteria,1,true,keys,last_file)
+             |> first_of_list()
       true
         -> bucket_name
-             |> list_from_filepages_asc(table_name,object_criteria,max_results,single_match,keys,0,last_file)
+             |> list_from_filepages_asc(table_name,object_criteria,1,true,keys,0,last_file)
+             |> first_of_list()
+    end
+  end
+  
+  defp first_of_list(list) do
+    cond do
+      (Enum.empty?(list))
+        -> nil
+      true
+        -> list
+            |> hd()
     end
   end
   
