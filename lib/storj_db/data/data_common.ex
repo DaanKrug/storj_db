@@ -7,43 +7,31 @@ defmodule StorjDB.DataCommon do
   alias StorjDB.DatabaseSchema
   alias StorjDB.FileService
  
-  def match_id(object_criteria,object) do
-    id0 = object_criteria 
-            |> MapUtil.get(:id)
-    id1 = object 
-            |> MapUtil.get(:id)
+ 
+  def match_keys(object,object_criteria,keys,single_match) do
     cond do
-      (nil == id0 or nil == id1)
+      (Enum.empty?(keys) or nil == object)
         -> false
       true
-        -> (id0 |> NumberUtil.to_integer()) == (id1 |> NumberUtil.to_integer())
+        -> object
+             |> match_keys2(object_criteria,keys,single_match)
     end
   end
   
-  def match_keys(object_criteria,object,keys,single_match) do
-    cond do
-      (Enum.empty?(keys))
-        -> false
-      true
-        -> object_criteria
-             |> match_keys2(object,keys,single_match)
-    end
-  end
-  
-  defp match_keys2(object_criteria,object,keys,single_match) do
-    match = match_key(object_criteria,object,keys |> hd())
+  defp match_keys2(object,object_criteria,keys,single_match) do
+    match = match_key(object,object_criteria,keys |> hd())
     cond do
       (!single_match and !match)
         -> false
       (single_match and match)
         -> true
       true
-        -> object_criteria
-             |> match_keys(object,keys |> tl(),single_match)
+        -> object
+             |> match_keys(object_criteria,keys |> tl(),single_match)
     end
   end
   
-  defp match_key(object_criteria,object,key) do
+  defp match_key(object,object_criteria,key) do
     criteria_value = object_criteria 
                        |> MapUtil.get(key)
     attribute_value = object 
