@@ -22,5 +22,8 @@ defmodule StorjDB do
     Service.load_all(table_name,object_criteria,max_results,single_match,sort_desc)
   end
   
+  def update(table,object) do
+    Service.update(table,object)
+  end
   
 end

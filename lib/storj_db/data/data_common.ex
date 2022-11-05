@@ -108,4 +108,14 @@ defmodule StorjDB.DataCommon do
     end
   end
   
+  #==============================
+  
+  def update_table_objects(bucket_name,table_name,objects_to_save,file_number) do
+    content = objects_to_save
+                |> Poison.encode!() 
+    filename = "#{table_name}_#{file_number}.txt"
+    bucket_name
+      |> FileService.write_file_content(filename,content)
+  end
+  
 end

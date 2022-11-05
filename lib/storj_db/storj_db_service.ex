@@ -10,6 +10,8 @@ defmodule StorjDB.Service do
   alias StorjDB.ConnectionConfig
   alias StorjDB.DataCreate
   alias StorjDB.DataRestore
+  alias StorjDB.DataUpdate
+  
   
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, nil, named: __MODULE__)
@@ -27,8 +29,8 @@ defmodule StorjDB.Service do
     ConnectionConfig.reset_data_dir()
   end
   
-  def create(table,object) do
-    DataCreate.create(table,object)
+  def create(table_name,object) do
+    DataCreate.create(table_name,object)
   end
   
   def load_by_id(table_name,id) do
@@ -37,6 +39,10 @@ defmodule StorjDB.Service do
   
   def load_all(table_name,object_criteria,max_results \\ -1,single_match \\ true,sort_desc \\ false) do
     DataRestore.load_all(table_name,object_criteria,max_results,single_match,sort_desc)
+  end
+  
+  def update(table_name,object) do
+    DataUpdate.update(table_name,object)
   end
   
 end

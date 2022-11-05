@@ -206,6 +206,45 @@ defmodule StorjDBTest do
     assert (tt4 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
     assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
+    
+    tt3 = tt3 
+            |> MapUtil.replace(:nome, "truta t3")
+            |> MapUtil.replace(:nome2, "truta t3")
+            |> MapUtil.replace(:nome3, "truta t3")
+            
+    tt4 = tt4 
+            |> MapUtil.replace(:nome, "truta t4")
+            |> MapUtil.replace(:nome2, "truta t4")
+            |> MapUtil.replace(:nome3, "truta t4")
+            
+    tt5 = tt5 
+            |> MapUtil.replace(:nome, "truta t5")
+            |> MapUtil.replace(:nome2, "truta t5")
+            |> MapUtil.replace(:nome3, "truta t5")
+    
+    StorjDB.update("trutas",tt3)
+    StorjDB.update("trutas",tt4)
+    StorjDB.update("trutas",tt5)
+    
+    tt3 = StorjDB.load_by_id("trutas",1)
+    tt4 = StorjDB.load_by_id("trutas",2)
+    tt5 = StorjDB.load_by_id("trutas",3)
+    
+    assert (tt3 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt3 |> MapUtil.get(:nome)) == "truta t3"
+    assert (tt3 |> MapUtil.get(:nome2)) == "truta t3"
+    assert (tt3 |> MapUtil.get(:nome3)) == "truta t3"
+    
+    assert (tt4 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt4 |> MapUtil.get(:nome)) == "truta t4"
+    assert (tt4 |> MapUtil.get(:nome2)) == "truta t4"
+    assert (tt4 |> MapUtil.get(:nome3)) == "truta t4"
+    
+    assert (tt5 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt5 |> MapUtil.get(:nome)) == "truta t5"
+    assert (tt5 |> MapUtil.get(:nome2)) == "truta t5"
+    assert (tt5 |> MapUtil.get(:nome3)) == "truta t5"
+         
   end
   
 end
