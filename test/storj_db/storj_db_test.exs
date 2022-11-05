@@ -9,6 +9,11 @@ defmodule StorjDBTest do
   
   
   test "[create(...) | load_by_id(...) | load_all(...) | delete(...) | delete_by_id(...) | read_table_info(...) | drop_table(...) ]" do
+    
+    "trutas" 
+          |> StorjDB.drop_table()
+    "carnes" 
+          |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
     
     tt1 = StorjDB.load_by_id("trutas",1)
@@ -39,6 +44,10 @@ defmodule StorjDBTest do
     assert (tt1 |> MapUtil.get(:nome)) == (t1 |> MapUtil.get(:nome))
     assert (tt1 |> MapUtil.get(:found_on_file_number)) == 0
     
+    "trutas" 
+          |> StorjDB.drop_table()
+    "carnes" 
+          |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
     
     tt1 = StorjDB.load_by_id("trutas",1)
@@ -111,6 +120,10 @@ defmodule StorjDBTest do
     assert (tt2 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
     assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == 0
     
+    "trutas" 
+          |> StorjDB.drop_table()
+    "carnes" 
+          |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
     
     tt1 = StorjDB.load_by_id("trutas",1)
@@ -289,6 +302,29 @@ defmodule StorjDBTest do
     assert rows_perfile == nil
     assert total_rows == nil
     assert last_id == nil
+    
+    "trutas" 
+          |> StorjDB.drop_table()
+    "carnes" 
+          |> StorjDB.drop_table()
+    StorjDB.reset_data_dir()
+    
+    StorjDB.create("trutas",t1)
+    StorjDB.create("trutas",t2)
+    StorjDB.create("carnes",c1)
+    StorjDB.create("carnes",c2)
+    
+    StorjDB.create("trutas",t1)
+    StorjDB.create("trutas",t2)
+    StorjDB.create("carnes",c1)
+    StorjDB.create("carnes",c2)
+    
+    StorjDB.create("trutas",t1)
+    StorjDB.create("trutas",t2)
+    StorjDB.create("carnes",c1)
+    StorjDB.create("carnes",c2)
+    
+    
          
   end
   

@@ -64,9 +64,10 @@ defmodule StorjDB.ConnectionConfig do
   defp init_connection_sample(base_path) do
     database_schema_path = "database_schema.txt"
     content = """
-              bucket_name=sample_database
+              bucket_name=sample-database
               database_schema=#{database_schema_path}
-              only_local_disk=1
+              only_local_disk=0
+              debugg=0
               """
     "#{base_path}/#{@config_filename}" 
       |> FileUtil.write(content)
@@ -113,9 +114,12 @@ defmodule StorjDB.ConnectionConfig do
                         |> StructUtil.get_key_par_value_from_list(list)
     only_local_disk = "only_local_disk" 
                         |> StructUtil.get_key_par_value_from_list(list)
+    debugg = "debugg" 
+               |> StructUtil.get_key_par_value_from_list(list)
     EtsUtil.store_in_cache(:storj_db_app,"bucket_name",bucket_name)
     EtsUtil.store_in_cache(:storj_db_app,"database_schema",database_schema)
     EtsUtil.store_in_cache(:storj_db_app,"only_local_disk",only_local_disk)
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",debugg)
     :ok
   end
   
