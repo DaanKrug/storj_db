@@ -37,6 +37,7 @@ defmodule StorjDBTest do
     StorjDB.create("trutas",t1)
     tt1 = StorjDB.load_by_id("trutas",1)
     assert (tt1 |> MapUtil.get(:nome)) == (t1 |> MapUtil.get(:nome))
+    assert (tt1 |> MapUtil.get(:found_on_file_number)) == 0
     
     StorjDB.reset_data_dir()
     
@@ -63,6 +64,8 @@ defmodule StorjDBTest do
     assert (tt2 |> MapUtil.get(:nome)) == (t2 |> MapUtil.get(:nome))
     assert (tt1 |> MapUtil.get(:qualidade)) == (t1 |> MapUtil.get(:qualidade))
     assert (tt2 |> MapUtil.get(:qualidade)) == (t2 |> MapUtil.get(:qualidade))
+    assert (tt1 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt2 |> MapUtil.get(:found_on_file_number)) == 0
     assert tt3 == nil
     
     cc1 = StorjDB.load_by_id("carnes",1)
@@ -73,6 +76,8 @@ defmodule StorjDBTest do
     assert (cc2 |> MapUtil.get(:nome)) == (c2 |> MapUtil.get(:nome))
     assert (cc1 |> MapUtil.get(:qualidade)) == (c1 |> MapUtil.get(:qualidade))
     assert (cc2 |> MapUtil.get(:qualidade)) == (c2 |> MapUtil.get(:qualidade))
+    assert (cc1 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (cc2 |> MapUtil.get(:found_on_file_number)) == 0
     assert cc3 == nil
     
     object_criteria = %{
@@ -93,6 +98,7 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 1
     assert (tt1 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == 0
     
     object_criteria = %{
       nome: "truta"
@@ -103,6 +109,7 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 1
     assert (tt2 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == 0
     
     StorjDB.reset_data_dir()
     
@@ -133,6 +140,10 @@ defmodule StorjDBTest do
     tt4 = StorjDB.load_by_id("trutas",2)
     tt5 = StorjDB.load_by_id("trutas",3)
     
+    assert (tt3 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt4 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt5 |> MapUtil.get(:found_on_file_number)) == 0
+    
     object_criteria = %{
       nome: "truta boa"
     }
@@ -142,6 +153,8 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 2
     assert (tt3 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
+    assert (results |> tl() |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
     object_criteria = %{
       qualidade: "Q3"
@@ -152,6 +165,8 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 2
     assert (tt3 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
+    assert (results |> tl() |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
     object_criteria = %{
       nome: "truta boa",
@@ -163,6 +178,9 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 3
     assert (tt3 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
+    assert (results |> tl() |> hd() |> MapUtil.get(:found_on_file_number)) == nil
+    assert (results |> tl() |> tl() |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
     object_criteria = %{
       nome: "truta boa",
@@ -174,6 +192,7 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 1
     assert (tt3 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
     object_criteria = %{
       nome: "truta boa",
@@ -185,6 +204,7 @@ defmodule StorjDBTest do
     results = StorjDB.load_all("trutas",object_criteria,max_results,single_match,sort_desc)
     assert length(results) == 1
     assert (tt4 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
+    assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == nil
     
   end
   

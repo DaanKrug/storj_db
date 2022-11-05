@@ -5,6 +5,7 @@ defmodule StorjDB.DatabaseSchema do
   alias Krug.MapUtil
   alias Krug.EtsUtil
   alias StorjDB.FileService
+  alias StorjDB.ConnectionConfig
   
 
   def new() do
@@ -19,7 +20,7 @@ defmodule StorjDB.DatabaseSchema do
     cond do
       (nil == table)
         -> table_name
-             |> update_schema(1000,0,0,0,true)
+             |> update_schema(-1,0,0,0,true)
       true
         -> table
     end
@@ -38,11 +39,11 @@ defmodule StorjDB.DatabaseSchema do
       |> update_schema(rows_perfile,last_file,total_rows, last_id, return_table)
   end
   
-  def update_schema(table_name,rows_perfile \\ 1000,last_file \\ 0,
-                    total_rows \\ 0, last_id \\ 0, return_table \\ false) do
+  defp update_schema(table_name,rows_perfile,last_file,total_rows, last_id, return_table) do
     database_schema = read_database_schema()
                         |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
-    write_database_schema(database_schema)
+    database_schema
+      |> write_database_schema()
     cond do
       (return_table)
         -> database_schema 
@@ -100,6 +101,8 @@ defmodule StorjDB.DatabaseSchema do
   end
   
   defp new_table(table_name,rows_perfile) do
+    rows_perfile = table_name 
+                     |> ConnectionConfig.read_rows_perfile_if_undefined(rows_perfile)
     %{
       table_name: table_name,
       rows_perfile: rows_perfile,
@@ -108,7 +111,7 @@ defmodule StorjDB.DatabaseSchema do
       last_id: 0
     }
   end
-  
+   
   defp update_tables(table,database_schema) do
     tables = database_schema
                |> MapUtil.get(:tables)

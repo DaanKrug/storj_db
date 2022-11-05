@@ -4,6 +4,7 @@ defmodule StorjDB.DataRestore do
   
   alias StorjDB.DataCommon
   alias Krug.EtsUtil
+  alias Krug.MapUtil
   
  
   def load_by_id(table_name,id) do
@@ -113,14 +114,14 @@ defmodule StorjDB.DataRestore do
       (sort_desc)
         -> objects
              |> Enum.reverse()
-             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match)
+             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match,file_number)
       true
         -> objects
-             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match)
+             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match,file_number)
     end
   end
   
-  defp filter_results(objects,object_criteria,keys,max_results,filtered_objects,single_match) do
+  defp filter_results(objects,object_criteria,keys,max_results,filtered_objects,single_match,file_number) do
     cond do
       (Enum.empty?(objects))
         -> filtered_objects 
@@ -130,23 +131,36 @@ defmodule StorjDB.DataRestore do
              |> Enum.reverse()
       true
         -> objects 
-             |> filter_results2(object_criteria,keys,max_results,filtered_objects,single_match)
+             |> filter_results2(object_criteria,keys,max_results,filtered_objects,single_match,file_number)
     end
   end
   
-  defp filter_results2(objects,object_criteria,keys,max_results,filtered_objects,single_match) do
-    match = objects 
+  defp filter_results2(objects,object_criteria,keys,max_results,filtered_objects,single_match,file_number) do
+    object = objects 
               |> hd()
+    match = object
               |> DataCommon.match_keys(object_criteria,keys,single_match)
     cond do
       (!match) 
         -> objects
              |> tl()
-             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match)
+             |> filter_results(object_criteria,keys,max_results,filtered_objects,single_match,file_number)
       true
         -> objects
              |> tl()
-             |> filter_results(object_criteria,keys,max_results,[objects |> hd() | filtered_objects],single_match)
+             |> filter_results(object_criteria,keys,max_results,
+                               [object |> prepare_matched_object(file_number,max_results) | filtered_objects],
+                               single_match,file_number)
+    end
+  end
+  
+  defp prepare_matched_object(object,file_number,max_results) do
+    cond do
+      (max_results != 1)
+        -> object
+      true
+        -> object
+             |> MapUtil.replace(:found_on_file_number,file_number)
     end
   end
   

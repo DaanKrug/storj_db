@@ -6,10 +6,11 @@ defmodule StorjDB.ConnectionConfig do
   alias Krug.EtsUtil
   alias Krug.StructUtil
   alias Krug.StringUtil
-  alias StorjDB.DatabaseSchema
+  alias Krug.MapUtil
   
   
   @config_filename "storj_db.config.txt"
+  @default_table_rows 100
 
 
   def read_database_config_path() do
@@ -62,7 +63,6 @@ defmodule StorjDB.ConnectionConfig do
   
   defp init_connection_sample(base_path) do
     database_schema_path = "database_schema.txt"
-    DatabaseSchema.update_schema("table_1",100)
     content = """
               bucket_name=sample_database
               database_schema=#{database_schema_path}
@@ -118,5 +118,54 @@ defmodule StorjDB.ConnectionConfig do
     EtsUtil.store_in_cache(:storj_db_app,"only_local_disk",only_local_disk)
     :ok
   end
+  
+  def read_rows_perfile_if_undefined(table_name,rows_perfile) do
+    cond do
+      (rows_perfile > 0)
+        -> rows_perfile
+      true
+        -> table_name 
+             |> read_rows_perfile_from_application_env()
+    end
+  end
+  
+  defp read_rows_perfile_from_application_env(table_name) do
+    tables_config = Application.get_env(:storj_db,:tables_config)
+    cond do
+      (nil == tables_config)
+        -> @default_table_rows
+      true
+        -> table_name
+             |> read_rows_perfile_from_application_env2(tables_config)
+    end
+  end
+  
+  defp read_rows_perfile_from_application_env2(table_name,tables_config) do
+    table_config = tables_config 
+                     |> MapUtil.get(table_name)
+    cond do
+      (nil == table_config)
+        -> @default_table_rows
+      true
+        -> table_config
+             |> read_rows_perfile_from_application_env3()
+    end
+  end
+  
+  defp read_rows_perfile_from_application_env3(table_config) do
+    table_rows = table_config 
+                   |> MapUtil.get(:rows_perfile)
+    ["it works: table rows number perfile for table => ", table_rows] |> IO.inspect()
+    cond do
+      (nil == table_rows or table_rows <= 0)
+        -> @default_table_rows
+      true
+        -> table_rows
+    end
+  end
  
 end
+
+
+
+
