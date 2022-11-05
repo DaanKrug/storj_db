@@ -6,16 +6,26 @@ defmodule StorjDB.DataRestore do
   alias StorjDB.DataCommon
   alias Krug.EtsUtil
   alias Krug.MapUtil
-  
+ 
  
   def load_by_id(table_name,id) do
-    [
+     [
       last_file,
       _rows_perfile,
       _total_rows,
       last_id
     ] = table_name 
           |> DataCommon.read_table_info()
+    cond do
+      (nil == last_file or nil == last_id)
+        -> nil
+      true
+        -> table_name
+             |> load_by_id2(id,last_file,last_id)
+    end
+  end 
+ 
+  def load_by_id2(table_name,id,last_file,last_id) do  
     object_criteria = %{
       id: id
     }

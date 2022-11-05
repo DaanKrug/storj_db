@@ -34,6 +34,23 @@ defmodule StorjDB.FileService do
     end
   end
   
+  def drop_file(bucket_name,filename) do
+    dest_path = ConnectionConfig.read_database_config_path()
+    file_path = "#{dest_path}/#{filename}"
+    deleted = file_path 
+                |> FileUtil.drop_file()
+    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+    cond do
+      (!deleted)
+        -> :error
+      (only_local_disk == 1 or only_local_disk == "1")
+        -> :ok
+      true
+        -> bucket_name
+             |> drop_file2(file_path)
+    end
+  end
+  
   defp read_destination_file(bucket_name,filename) do
     dest_path = ConnectionConfig.read_database_config_path()
     only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
@@ -69,21 +86,6 @@ defmodule StorjDB.FileService do
     "sj://#{bucket_name}/#{filename}"
   end
   
-  defp drop_file(bucket_name,filename) do
-    storj_link = "sj://#{bucket_name}/#{filename}"
-    executable = "uplink"
-    arguments = ["rm",storj_link]
-    {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    cond do
-      (exit_status != 0) 
-        -> false
-      (!(String.contains?(result,"Deleted #{storj_link}"))) 
-        -> false
-      true 
-        -> true
-    end
-  end
-  
   defp download_file(bucket_name,filename,dest_path) do
     storj_link = "sj://#{bucket_name}/#{filename}"
     destination_file = "#{dest_path}/#{filename}"
@@ -97,6 +99,21 @@ defmodule StorjDB.FileService do
         -> nil
       true 
         -> destination_file
+    end
+  end
+  
+  defp drop_file2(bucket_name,filename) do
+    storj_link = "sj://#{bucket_name}/#{filename}"
+    executable = "uplink"
+    arguments = ["rm",storj_link]
+    {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
+    cond do
+      (exit_status != 0) 
+        -> false
+      (!(String.contains?(result,"Deleted #{storj_link}"))) 
+        -> false
+      true 
+        -> true
     end
   end
  

@@ -26,4 +26,20 @@ defmodule StorjDB do
     Service.update(table,object)
   end
   
+  def delete(table_name,object) do
+    Service.delete(table_name,object)
+  end
+  
+  def delete_by_id(table_name,id) do
+    Service.delete_by_id(table_name,id)
+  end
+  
+  def drop_table(table_name) do
+    Service.drop_table(table_name)
+  end
+  
+  def read_table_info(table_name) do
+    Service.read_table_info(table_name)
+  end
+  
 end

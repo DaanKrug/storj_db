@@ -58,9 +58,19 @@ defmodule StorjDB.DataCommon do
   
   #==============================
   
-  def read_table_info(table_name) do
+  def read_table_info(table_name,nil_if_nil \\ false) do
     table_info = table_name
-                   |> DatabaseSchema.read_table_schema()
+                   |> DatabaseSchema.read_table_schema(nil_if_nil)
+    cond do
+      (nil == table_info)
+        -> [nil,nil,nil,nil]
+      true
+        -> table_info
+             |> read_table_info2()
+    end
+  end
+  
+  def read_table_info2(table_info) do
     last_file = table_info 
                 |> MapUtil.get(:last_file)    
     rows_perfile = table_info 
@@ -110,12 +120,60 @@ defmodule StorjDB.DataCommon do
   
   #==============================
   
-  def update_table_objects(bucket_name,table_name,objects_to_save,file_number) do
+  def update_table_objects(bucket_name,table_name,objects_to_save,file_number,schema_info) do
     content = objects_to_save
                 |> Poison.encode!() 
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
       |> FileService.write_file_content(filename,content)
+    cond do
+      (nil == schema_info)
+        -> :ok
+      true
+        -> schema_info
+             |> DatabaseSchema.update_schema_by_schema_info()
+    end
+  end
+  
+  #==============================
+  
+  def drop_table(bucket_name,table_name) do
+    table_info = table_name
+                   |> DatabaseSchema.read_table_schema(true)
+    cond do
+      (nil == table_info)
+        -> :ok
+      true
+        -> table_info 
+             |> MapUtil.get(:last_file)
+             |> drop_table_files(bucket_name,table_name)
+    end
+  end
+  
+  defp drop_table_files(file_number,bucket_name,table_name) do
+    cond do
+      (file_number < 0)
+        -> table_name
+             |> DatabaseSchema.remove_table_from_schema()
+      true
+        -> file_number
+             |> drop_table_files2(bucket_name,table_name)
+    end
+  end
+  
+  defp drop_table_files2(file_number,bucket_name,table_name) do
+    filename = "#{table_name}_#{file_number}.txt"
+    bucket_name
+      |> FileService.drop_file(filename)
+    drop_table_files(file_number - 1,bucket_name,table_name)
   end
   
 end
+
+
+
+
+
+
+
+

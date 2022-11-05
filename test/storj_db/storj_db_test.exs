@@ -8,7 +8,7 @@ defmodule StorjDBTest do
   alias Krug.MapUtil
   
   
-  test "[create(...) | load_by_id(...) | load_all(...)]" do
+  test "[create(...) | load_by_id(...) | load_all(...) | delete(...) | delete_by_id(...) | read_table_info(...) | drop_table(...) ]" do
     StorjDB.reset_data_dir()
     
     tt1 = StorjDB.load_by_id("trutas",1)
@@ -244,6 +244,51 @@ defmodule StorjDBTest do
     assert (tt5 |> MapUtil.get(:nome)) == "truta t5"
     assert (tt5 |> MapUtil.get(:nome2)) == "truta t5"
     assert (tt5 |> MapUtil.get(:nome3)) == "truta t5"
+    
+    
+    StorjDB.delete_by_id("trutas",3)
+    StorjDB.delete("trutas",tt4)
+    
+    tt3 = StorjDB.load_by_id("trutas",1)
+    tt4 = StorjDB.load_by_id("trutas",2)
+    tt5 = StorjDB.load_by_id("trutas",3)
+    
+    assert (tt3 |> MapUtil.get(:found_on_file_number)) == 0
+    assert (tt3 |> MapUtil.get(:nome)) == "truta t3"
+    assert (tt3 |> MapUtil.get(:nome2)) == "truta t3"
+    assert (tt3 |> MapUtil.get(:nome3)) == "truta t3"
+    
+    assert tt4 == nil
+    assert tt5 == nil
+    
+    [
+      last_file,
+      rows_perfile,
+      total_rows,
+      last_id
+    ] = "trutas" 
+          |> StorjDB.read_table_info()
+          
+    assert last_file == 0
+    assert rows_perfile == 100
+    assert total_rows == 1
+    assert last_id == (tt3 |> MapUtil.get(:id))
+    
+    "trutas" 
+          |> StorjDB.drop_table()
+    
+    [
+      last_file,
+      rows_perfile,
+      total_rows,
+      last_id
+    ] = "trutas" 
+          |> StorjDB.read_table_info()
+          
+    assert last_file == nil
+    assert rows_perfile == nil
+    assert total_rows == nil
+    assert last_id == nil
          
   end
   

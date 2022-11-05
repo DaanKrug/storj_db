@@ -14,10 +14,22 @@ defmodule StorjDB.DatabaseSchema do
     }
   end
   
-  def read_table_schema(table_name) do
+  def remove_table_from_schema(table_name) do 
+    database_schema = read_database_schema()
+    tables = database_schema
+               |> MapUtil.get(:tables)
+               |> remove_table(table_name)
+    database_schema
+      |> MapUtil.replace(:tables, tables)
+      |> write_database_schema()
+  end
+  
+  def read_table_schema(table_name,nil_if_nil \\ false) do
     table = read_database_schema() 
               |> search_table_in_schema(table_name)
     cond do
+      (nil_if_nil and nil == table)
+        -> nil
       (nil == table)
         -> table_name
              |> update_schema(-1,0,0,0,true)
@@ -57,7 +69,7 @@ defmodule StorjDB.DatabaseSchema do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     content = database_schema 
-                |> Poison.encode!()
+                |> Poison.encode!() 
     FileService.write_file_content(bucket_name,filename,content)
   end
   
@@ -169,6 +181,31 @@ defmodule StorjDB.DatabaseSchema do
         -> tables
              |> tl()
              |> search_table_in_schema2(table_name)
+    end
+  end
+  
+  defp remove_table(tables,table_name,tables_new \\ []) do
+    cond do
+      (Enum.empty?(tables))
+        -> tables_new
+             |> Enum.reverse()
+      true
+        -> remove_table2(tables,table_name,tables_new)
+    end
+  end
+  
+  defp remove_table2(tables,table_name,tables_new) do
+    table = tables
+              |> hd()
+    cond do
+      (table |> MapUtil.get(:table_name) == table_name)
+        -> tables 
+             |> tl()
+             |> remove_table(table_name,tables_new) 
+      true
+        -> tables 
+             |> tl()
+             |> remove_table(table_name,[table | tables_new]) 
     end
   end
 

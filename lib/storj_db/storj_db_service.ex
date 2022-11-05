@@ -8,11 +8,13 @@ defmodule StorjDB.Service do
   
   alias Krug.EtsUtil
   alias StorjDB.ConnectionConfig
+  alias StorjDB.DataCommon
   alias StorjDB.DataCreate
   alias StorjDB.DataRestore
   alias StorjDB.DataUpdate
-  
-  
+  alias StorjDB.DataDelete
+
+    
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, nil, named: __MODULE__)
   end
@@ -45,4 +47,22 @@ defmodule StorjDB.Service do
     DataUpdate.update(table_name,object)
   end
   
+  def delete(table_name,object) do
+    DataDelete.delete(table_name,object)
+  end
+  
+  def delete_by_id(table_name,id) do
+    DataDelete.delete_by_id(table_name,id)
+  end
+  
+  def drop_table(table_name) do
+    DataDelete.drop_table(table_name)
+  end
+  
+  def read_table_info(table_name) do
+    DataCommon.read_table_info(table_name,true)
+  end
+  
 end
+
+

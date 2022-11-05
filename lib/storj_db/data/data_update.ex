@@ -18,7 +18,7 @@ defmodule StorjDB.DataUpdate do
     objects_to_update = objects
                         |> prepare_object_to_update(object,id)
     bucket_name
-      |> DataCommon.update_table_objects(table_name,objects_to_update,file_number)
+      |> DataCommon.update_table_objects(table_name,objects_to_update,file_number,nil)
   end
   
   defp prepare_object_to_update(objects,object,id,objects_to_update \\ []) do
