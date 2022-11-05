@@ -14,6 +14,12 @@ defmodule StorjDB.DatabaseSchema do
     }
   end
   
+  def drop_database_schema() do
+    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+    FileService.drop_file(bucket_name,filename)
+  end
+  
   def remove_table_from_schema(table_name) do 
     database_schema = read_database_schema()
     tables = database_schema

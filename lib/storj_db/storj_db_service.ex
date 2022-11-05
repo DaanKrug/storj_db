@@ -8,6 +8,7 @@ defmodule StorjDB.Service do
   
   alias Krug.EtsUtil
   alias StorjDB.ConnectionConfig
+  alias StorjDB.DatabaseSchema
   alias StorjDB.DataCommon
   alias StorjDB.DataCreate
   alias StorjDB.DataRestore
@@ -29,6 +30,7 @@ defmodule StorjDB.Service do
   
   def reset_data_dir() do
     ConnectionConfig.reset_data_dir()
+    DatabaseSchema.drop_database_schema()
   end
   
   def create(table_name,object) do
