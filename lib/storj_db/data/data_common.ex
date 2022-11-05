@@ -2,16 +2,28 @@ defmodule StorjDB.DataCommon do
 
   @moduledoc false
   
-  alias Krug.NumberUtil
+  
   alias Krug.MapUtil
   alias StorjDB.DatabaseSchema
   alias StorjDB.FileService
- 
+  
+  
+  def first_of_list(list) do
+    cond do
+      (Enum.empty?(list))
+        -> nil
+      true
+        -> list
+            |> hd()
+    end
+  end
  
   def match_keys(object,object_criteria,keys,single_match) do
     cond do
-      (Enum.empty?(keys) or nil == object)
+      (nil == object)
         -> false
+      (Enum.empty?(keys))
+        -> !single_match
       true
         -> object
              |> match_keys2(object_criteria,keys,single_match)
@@ -37,7 +49,7 @@ defmodule StorjDB.DataCommon do
     attribute_value = object 
                         |> MapUtil.get(key)
     cond do
-      (nil == criteria_value or nil == criteria_value)
+      (nil == criteria_value or nil == attribute_value)
         -> false
       true
         -> String.contains?("#{attribute_value}","#{criteria_value}")

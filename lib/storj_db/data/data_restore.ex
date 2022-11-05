@@ -5,53 +5,40 @@ defmodule StorjDB.DataRestore do
   alias StorjDB.DataCommon
   alias Krug.EtsUtil
   
-  
-  defp match_criteria() do
-    # DataCommon.match_id(object_criteria,object)
-    # DataCommon.match_key(object_criteria,object,key)
-  end
-  
+ 
   def load_by_id(table_name,id) do
     [
       last_file,
-      rows_perfile,
-      total_rows,
+      _rows_perfile,
+      _total_rows,
       last_id
     ] = table_name 
           |> DataCommon.read_table_info()
     object_criteria = %{
       id: id
     }
-    keys = [:id]
+    keys = object_criteria
+             |> Map.keys()
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    sort_desc = id >= (last_id/2)
     cond do
       (sort_desc)
         -> bucket_name
              |> list_from_filepages_desc(table_name,object_criteria,1,true,keys,last_file)
-             |> first_of_list()
+             |> DataCommon.first_of_list()
       true
         -> bucket_name
              |> list_from_filepages_asc(table_name,object_criteria,1,true,keys,0,last_file)
-             |> first_of_list()
+             |> DataCommon.first_of_list()
     end
   end
   
-  defp first_of_list(list) do
-    cond do
-      (Enum.empty?(list))
-        -> nil
-      true
-        -> list
-            |> hd()
-    end
-  end
-  
-  def load_all(table_name,object,object_criteria,max_results \\ -1,single_match \\ true,sort_desc \\ false) do
+  def load_all(table_name,object_criteria,max_results \\ -1,single_match \\ true,sort_desc \\ false) do
     [
       last_file,
-      rows_perfile,
-      total_rows,
-      last_id
+      _rows_perfile,
+      _total_rows,
+      _last_id
     ] = table_name 
           |> DataCommon.read_table_info()
     keys = object_criteria 
@@ -76,8 +63,8 @@ defmodule StorjDB.DataRestore do
         -> all_filtered_objects
       true
         -> bucket_name
-             |> list_from_filepages_asc2(table_name,object_criteria,
-                                         max_results,single_match,keys,file_number,all_filtered_objects)
+             |> list_from_filepages_desc2(table_name,object_criteria,
+                                          max_results,single_match,keys,file_number,all_filtered_objects)
     end
   end
   
@@ -86,8 +73,8 @@ defmodule StorjDB.DataRestore do
     all_filtered_objects = 
       list_from_filepage(bucket_name,table_name,object_criteria,max_results,
                          single_match,keys,file_number,true,all_filtered_objects)    
-    list_from_filepages_asc(bucket_name,table_name,object_criteria,
-                            max_results,single_match,keys,file_number - 1,all_filtered_objects)          
+    list_from_filepages_desc(bucket_name,table_name,object_criteria,
+                             max_results,single_match,keys,file_number - 1,all_filtered_objects)          
   end
   
   defp list_from_filepages_asc(bucket_name,table_name,object_criteria,
@@ -159,7 +146,7 @@ defmodule StorjDB.DataRestore do
       true
         -> objects
              |> tl()
-             |> filter_results(object_criteria,keys,max_results,[object | filtered_objects],single_match)
+             |> filter_results(object_criteria,keys,max_results,[objects |> hd() | filtered_objects],single_match)
     end
   end
   

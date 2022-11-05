@@ -9,6 +9,7 @@ defmodule StorjDB.Service do
   alias Krug.EtsUtil
   alias StorjDB.ConnectionConfig
   alias StorjDB.DataCreate
+  alias StorjDB.DataRestore
   
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, nil, named: __MODULE__)
@@ -22,9 +23,20 @@ defmodule StorjDB.Service do
     {:ok, []}
   end
   
+  def reset_data_dir() do
+    ConnectionConfig.reset_data_dir()
+  end
+  
   def create(table,object) do
     DataCreate.create(table,object)
   end
   
-
+  def load_by_id(table_name,id) do
+    DataRestore.load_by_id(table_name,id)
+  end
+  
+  def load_all(table_name,object_criteria,max_results \\ -1,single_match \\ true,sort_desc \\ false) do
+    DataRestore.load_all(table_name,object_criteria,max_results,single_match,sort_desc)
+  end
+  
 end

@@ -13,27 +13,16 @@ defmodule StorjDB.ConnectionConfig do
 
 
   def read_database_config_path() do
-    path = Application.get_env(:storj_db, :path)
-    cond do
-      (nil == path)
-        -> "."
-             |> create_data_dir()
-      true 
-        -> path
-             |> create_data_dir()
-    end
+    read_path()
+      |> create_data_dir()
   end
   
-  defp create_data_dir(path) do
-    data_dir = "#{path}/storj_db_data_files"
-    cond do
-      (File.exists?(data_dir))
-        -> :ok
-      true
-        -> data_dir
-             |> FileUtil.create_dir()
-    end
-    data_dir
+  def reset_data_dir() do
+    path = read_path()
+    path
+      |> FileUtil.drop_dir(true)
+    path
+      |> create_data_dir()
   end
   
   def config_connection() do
@@ -48,6 +37,27 @@ defmodule StorjDB.ConnectionConfig do
         -> content 
              |> init_connection_to_ets()
     end
+  end
+  
+  defp read_path() do
+    path = Application.get_env(:storj_db,:path)
+    cond do
+      (nil == path)
+        -> "./storj_db_data_files"
+      true 
+        -> "#{path}/storj_db_data_files"
+    end
+  end
+  
+  defp create_data_dir(path) do
+    cond do
+      (File.exists?(path))
+        -> :ok
+      true
+        -> path
+             |> FileUtil.create_dir()
+    end
+    path
   end
   
   defp init_connection_sample(base_path) do
