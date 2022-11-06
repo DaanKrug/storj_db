@@ -7,6 +7,7 @@ defmodule StorjDB.FileService do
   alias Krug.EtsUtil
   alias Krug.DateUtil
   alias StorjDB.ConnectionConfig
+  alias StorjDB.TempFileService
   
   
   def read_file_content(bucket_name,filename) do
