@@ -9,6 +9,7 @@ defmodule StorjDB.DatabaseSchema do
   alias StorjDB.StorjFileRead
   alias StorjDB.ConnectionConfig
   alias StorjDB.StorjFileDebugg
+  alias StorjDB.StorjSynchronizeTo
   
 
   def new() do
@@ -31,6 +32,9 @@ defmodule StorjDB.DatabaseSchema do
     database_schema
       |> MapUtil.replace(:tables, tables)
       |> write_database_schema()
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
+    StorjSynchronizeTo.mark_to_synchronize(table_name)
   end
   
   def read_table_schema(table_name,nil_if_nil \\ false) do
@@ -58,6 +62,8 @@ defmodule StorjDB.DatabaseSchema do
     ] = schema_info
     table_name
       |> update_schema(rows_perfile,last_file,total_rows, last_id, return_table)
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
   defp update_schema(table_name,rows_perfile,last_file,total_rows, last_id, return_table) do
@@ -65,6 +71,8 @@ defmodule StorjDB.DatabaseSchema do
                         |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
     database_schema
       |> write_database_schema()
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
     cond do
       (return_table)
         -> database_schema 
@@ -78,7 +86,7 @@ defmodule StorjDB.DatabaseSchema do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     content = database_schema 
-                |> Poison.encode!() 
+                |> Poison.encode!()           
     StorjFileStore.store_file(bucket_name,filename,content)
   end
   

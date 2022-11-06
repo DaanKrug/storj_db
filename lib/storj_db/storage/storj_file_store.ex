@@ -16,24 +16,26 @@ defmodule StorjDB.StorjFileStore do
         -> false
       true
         -> bucket_name
-             |> store_file2(filename)
+             |> synchronize_file(filename)
     end
   end
   
-  def store_file2(bucket_name,filename) do
+  def synchronize_file(bucket_name,filename) do
     only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+    synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_store_#{filename}")
+    EtsUtil.remove_from_cache(:storj_db_app,"synchronize_store_#{filename}")
     cond do
-      (only_local_disk == 1 or only_local_disk == "1")
+      (synchronize != true or only_local_disk == 1 or only_local_disk == "1")
         -> true
       true
         -> bucket_name
-             |> store_file3(filename)
+             |> synchronize_file2(filename)
     end
   end
   
-  defp store_file3(bucket_name,filename) do
+  defp synchronize_file2(bucket_name,filename) do
     file_path = filename
-                  |> TempFileService.get_temp_file()
+                  |> TempFileService.get_temp_file(true)
     executable = "uplink"
     arguments = ["cp",file_path,"sj://#{bucket_name}"]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)

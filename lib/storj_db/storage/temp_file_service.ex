@@ -38,11 +38,21 @@ defmodule StorjDB.TempFileService do
   
   #============================
   
-  def get_temp_file(filename) do
-    content = filename
-                |> read_file()
+  def get_temp_file(filename,for_upload \\ false) do
     dest_path = ConnectionConfig.read_database_config_path()
     file_path = "#{dest_path}/#{filename}"
+    cond do
+      (for_upload)
+        -> filename
+             |> write_temp_file(file_path)
+      true
+        -> file_path
+    end
+  end
+  
+  defp write_temp_file(filename,file_path) do
+    content = filename
+                |> read_file()
     file_path
       |> FileUtil.write("#{content}")
     file_path

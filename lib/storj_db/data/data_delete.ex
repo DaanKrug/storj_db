@@ -6,6 +6,7 @@ defmodule StorjDB.DataDelete do
   alias Krug.MapUtil
   alias StorjDB.DataCommon
   alias StorjDB.DataRestore
+  alias StorjDB.StorjSynchronizeTo
   
   
   def drop_table(table_name) do
@@ -37,10 +38,9 @@ defmodule StorjDB.DataDelete do
                 |> DataCommon.read_table_objects(table_name,file_number)
     objects_to_update = objects
                           |> prepare_object_to_update(id)
-    [last_file,last_id,test] = 
+    [last_file,last_id] = 
       bucket_name
         |> calculate_last_id_after_delete(table_name,objects,last_id,id,file_number,last_file) 
-        
     schema_info = [
       table_name,
       rows_perfile,
@@ -49,9 +49,11 @@ defmodule StorjDB.DataDelete do
       last_id,
       false
     ]
-    
     bucket_name
       |> DataCommon.update_table_objects(table_name,objects_to_update,file_number,schema_info)
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
+    StorjSynchronizeTo.mark_to_synchronize(table_name)
   end
   
   defp prepare_object_to_update(objects,id,objects_to_update \\ []) do
@@ -97,8 +99,7 @@ defmodule StorjDB.DataDelete do
       (last_id != id_to_delete)
         -> [
              last_file,
-             last_id,
-             "A"
+             last_id
            ]
       (length(objects) == 1 and file_number == last_file and last_file > 0)
         -> [
@@ -106,16 +107,14 @@ defmodule StorjDB.DataDelete do
              bucket_name  
                |> DataCommon.read_table_objects(table_name,last_file - 1)
                |> Enum.reverse()
-               |> calculate_last_id_after_delete2(last_id,id_to_delete,0),
-            "B"
+               |> calculate_last_id_after_delete2(last_id,id_to_delete,0)
            ]
       true
         -> [
              last_file, 
              objects
                |> Enum.reverse()
-               |> calculate_last_id_after_delete2(last_id,id_to_delete,0),
-               "C"
+               |> calculate_last_id_after_delete2(last_id,id_to_delete,0)
            ]
     end
   end

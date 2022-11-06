@@ -9,8 +9,10 @@ defmodule StorjDB.StorjFileRead do
   
   def read_file(bucket_name,filename) do
     only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+    synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_read_#{filename}")
+    EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
     cond do
-      (only_local_disk == 1 or only_local_disk == "1")
+      (synchronize != true or only_local_disk == 1 or only_local_disk == "1")
         -> filename
              |> TempFileService.read_file()
       true
