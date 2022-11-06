@@ -6,8 +6,7 @@ defmodule StorjDB.TempFileService do
   
   def write_file(filename,content) do
     drop_file(filename)
-    {:ok, pid} = StringIO.open("")
-    IO.write(pid,content)
+    {:ok, pid} = StringIO.open(content)
     EtsUtil.store_in_cache(:storj_db_app,filename,pid)
     pid
   end
@@ -29,9 +28,25 @@ defmodule StorjDB.TempFileService do
   end
   
   def drop_file(filename) do
+    pid = EtsUtil.read_from_cache(:storj_db_app,filename)
     EtsUtil.remove_from_cache(:storj_db_app,filename)
+    pid2 = EtsUtil.read_from_cache(:storj_db_app,filename)
+    cond do
+      (nil == pid2)
+        -> pid
+             |> StringIO.close()
+             |> drop_file2()
+      true
+        -> false    
+    end
   end
-
-  # EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
+  
+  defp drop_file2({:ok,_}) do
+    true
+  end
+  
+  defp drop_file2(_) do
+    false
+  end
 
 end
