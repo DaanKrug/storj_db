@@ -4,8 +4,11 @@ defmodule StorjDB.DatabaseSchema do
 
   alias Krug.MapUtil
   alias Krug.EtsUtil
-  alias StorjDB.FileService
+  alias StorjDB.StorjFileDrop
+  alias StorjDB.StorjFileStore
+  alias StorjDB.StorjFileRead
   alias StorjDB.ConnectionConfig
+  alias StorjDB.StorjFileDebugg
   
 
   def new() do
@@ -17,7 +20,7 @@ defmodule StorjDB.DatabaseSchema do
   def drop_database_schema() do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-    FileService.drop_file(bucket_name,filename)
+    StorjFileDrop.drop_file(bucket_name,filename)
   end
   
   def remove_table_from_schema(table_name) do 
@@ -76,13 +79,15 @@ defmodule StorjDB.DatabaseSchema do
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     content = database_schema 
                 |> Poison.encode!() 
-    FileService.write_file_content(bucket_name,filename,content)
+    StorjFileStore.store_file(bucket_name,filename,content)
   end
   
   defp read_database_schema() do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-    database_schema = FileService.read_file_content(bucket_name,filename)
+    database_schema = StorjFileRead.read_file(bucket_name,filename)
+    database_schema 
+      |> StorjFileDebugg.info()
     cond do
       (nil == database_schema or database_schema == "")
         -> new()

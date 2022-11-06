@@ -5,7 +5,9 @@ defmodule StorjDB.DataCommon do
   
   alias Krug.MapUtil
   alias StorjDB.DatabaseSchema
-  alias StorjDB.FileService
+  alias StorjDB.StorjFileDrop
+  alias StorjDB.StorjFileStore
+  alias StorjDB.StorjFileRead
   
   
   def first_of_list(list) do
@@ -85,7 +87,7 @@ defmodule StorjDB.DataCommon do
   def read_table_objects(bucket_name,table_name,file_number) do
     filename = "#{table_name}_#{file_number}.txt"
     content = bucket_name
-      |> FileService.read_file_content(filename)
+      |> StorjFileRead.read_file(filename)
     cond do
       (nil == content or content == "")
         -> []
@@ -104,7 +106,7 @@ defmodule StorjDB.DataCommon do
                    |> hd()
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
-      |> FileService.write_file_content(filename,content)
+      |> StorjFileStore.store_file(filename,content)
     schema_info
       |> DatabaseSchema.update_schema_by_schema_info()
   end
@@ -125,7 +127,7 @@ defmodule StorjDB.DataCommon do
                 |> Poison.encode!() 
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
-      |> FileService.write_file_content(filename,content)
+      |> StorjFileStore.store_file(filename,content)
     cond do
       (nil == schema_info)
         -> :ok
@@ -164,7 +166,7 @@ defmodule StorjDB.DataCommon do
   defp drop_table_files2(file_number,bucket_name,table_name) do
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
-      |> FileService.drop_file(filename)
+      |> StorjFileDrop.drop_file(filename)
     drop_table_files(file_number - 1,bucket_name,table_name)
   end
   

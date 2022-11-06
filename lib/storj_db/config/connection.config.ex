@@ -7,6 +7,7 @@ defmodule StorjDB.ConnectionConfig do
   alias Krug.StructUtil
   alias Krug.StringUtil
   alias Krug.MapUtil
+  alias StorjDB.StorjFileDebugg
   
   
   @config_filename "storj_db.config.txt"
@@ -159,7 +160,8 @@ defmodule StorjDB.ConnectionConfig do
   defp read_rows_perfile_from_application_env3(table_config) do
     table_rows = table_config 
                    |> MapUtil.get(:rows_perfile)
-    ["it works: table rows number perfile for table => ", table_rows] |> IO.inspect()
+    ["it works: table rows number perfile for table => ", table_rows] 
+      |> StorjFileDebugg.info()
     cond do
       (nil == table_rows or table_rows <= 0)
         -> @default_table_rows
