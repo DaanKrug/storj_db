@@ -13,7 +13,7 @@ defmodule StorjDB.TempFileService do
     {:ok,pid} = "#{content}"
                   |> StringIO.open()
     cond do
-      (nil == pid)
+      (nil == pid or !Process.alive?(pid))
         -> nil
       true
         -> EtsUtil.store_in_cache(:storj_db_app,filename,pid)
@@ -26,7 +26,7 @@ defmodule StorjDB.TempFileService do
   def read_file(filename) do
     pid = EtsUtil.read_from_cache(:storj_db_app,filename)
     cond do
-      (nil == pid)
+      (nil == pid or !Process.alive?(pid))
         -> nil
       true
         -> pid
@@ -58,7 +58,7 @@ defmodule StorjDB.TempFileService do
   def drop_file(filename) do
     pid = EtsUtil.read_from_cache(:storj_db_app,filename)
     cond do
-      (nil == pid)
+      (nil == pid or !Process.alive?(pid))
         -> true
       true
         -> pid  

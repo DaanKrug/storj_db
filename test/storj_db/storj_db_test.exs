@@ -402,11 +402,7 @@ defmodule StorjDBTest do
     assert total_rows == nil
     assert last_id == nil  
     
-    "trutas" 
-          |> StorjDB.drop_table()
-    "carnes" 
-          |> StorjDB.drop_table()
-    StorjDB.reset_data_dir()       
+       
   end
   
 end
