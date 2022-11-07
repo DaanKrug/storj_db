@@ -14,6 +14,7 @@ defmodule StorjDB.Service do
   alias StorjDB.DataRestore
   alias StorjDB.DataUpdate
   alias StorjDB.DataDelete
+  alias StorjDB.StorjSynchronizeTo
 
     
   def start_link(_opts) do
@@ -26,6 +27,10 @@ defmodule StorjDB.Service do
     "Started StorjDB.Service ..."
       |> Logger.info()
     {:ok, []}
+  end
+  
+  def synchronize_all() do
+    StorjSynchronizeTo.synchronize_all()
   end
   
   def reset_data_dir() do

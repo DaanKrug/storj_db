@@ -34,6 +34,8 @@ defmodule StorjDB.StorjFileStore do
   end
   
   defp synchronize_file2(bucket_name,filename) do
+    "store file => #{filename}"
+      |> IO.inspect()
     file_path = filename
                   |> TempFileService.get_temp_file(true)
     executable = "uplink"
@@ -41,7 +43,7 @@ defmodule StorjDB.StorjFileStore do
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
     ["store_file3",result, exit_status] 
       |> StorjFileDebugg.info()
-    file_path
+    filename
       |> TempFileService.drop_temp_file()
     cond do
       (exit_status != 0) 

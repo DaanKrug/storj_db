@@ -1,10 +1,15 @@
 defmodule StorjDB do
 
   alias StorjDB.Service
-
+  
+  
   @moduledoc """
   Documentation for "Storj DB" utilitaries modules.
   """
+  
+  def synchronize_all() do
+    Service.synchronize_all()
+  end
   
   def reset_data_dir() do
     Service.reset_data_dir()

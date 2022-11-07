@@ -30,6 +30,9 @@ defmodule StorjDBTest do
     "trutas" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
+    
+    
+    StorjDB.synchronize_all()
   end
   
   test "[create(...) | load_by_id(...) - 2]" do
