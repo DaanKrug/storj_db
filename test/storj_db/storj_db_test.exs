@@ -6,6 +6,7 @@ defmodule StorjDBTest do
   
   alias StorjDB
   alias Krug.MapUtil
+  # alias Krug.EtsUtil
   
   
   test "[create(...) | load_by_id(...) - 1]" do
@@ -27,12 +28,21 @@ defmodule StorjDBTest do
     assert (tt1 |> MapUtil.get(:nome)) == (t1 |> MapUtil.get(:nome))
     assert (tt1 |> MapUtil.get(:found_on_file_number)) == 0
     
+    # EtsUtil.store_in_cache(:storj_db_app,"debugg",true)
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
     "trutas" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
     
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
     
-    StorjDB.synchronize_all()
+    synchronized = StorjDB.cleanup_all()
+    assert synchronized == true
+    
+    # EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
   
   test "[create(...) | load_by_id(...) - 2]" do
@@ -98,11 +108,20 @@ defmodule StorjDBTest do
     assert (cc2 |> MapUtil.get(:found_on_file_number)) == 0
     assert cc3 == nil
     
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
     "trutas" 
           |> StorjDB.drop_table()
     "carnes" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    synchronized = StorjDB.cleanup_all()
+    assert synchronized == true
   end
   
   test "[load_all(...) - 1]" do
@@ -178,11 +197,20 @@ defmodule StorjDBTest do
     assert (tt2 |> MapUtil.get(:id)) == (results |> hd() |> MapUtil.get(:id))
     assert (results |> hd() |> MapUtil.get(:found_on_file_number)) == 0
     
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
     "trutas" 
           |> StorjDB.drop_table()
     "carnes" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    synchronized = StorjDB.cleanup_all()
+    assert synchronized == true
   end
     
   test "[load_all(...) - 2]" do
@@ -324,11 +352,20 @@ defmodule StorjDBTest do
     assert (tt5 |> MapUtil.get(:nome2)) == "truta t5"
     assert (tt5 |> MapUtil.get(:nome3)) == "truta t5"
     
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
     "trutas" 
           |> StorjDB.drop_table()
     "carnes" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    synchronized = StorjDB.cleanup_all()
+    assert synchronized == true
   end
     
   test "[delete(...) | delete_by_id(...) | read_table_info(...) | drop_table(...) ]" do
@@ -405,12 +442,14 @@ defmodule StorjDBTest do
     assert total_rows == nil
     assert last_id == nil  
     
-       
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    "trutas" 
+          |> StorjDB.drop_table()
+    
+    synchronized = StorjDB.cleanup_all()
+    assert synchronized == true
   end
   
 end
-
-
-
-
-

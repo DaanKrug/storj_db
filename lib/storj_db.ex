@@ -7,6 +7,10 @@ defmodule StorjDB do
   Documentation for "Storj DB" utilitaries modules.
   """
   
+  def cleanup_all() do
+    Service.cleanup_all()
+  end
+  
   def synchronize_all() do
     Service.synchronize_all()
   end

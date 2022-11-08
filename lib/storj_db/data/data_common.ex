@@ -4,10 +4,12 @@ defmodule StorjDB.DataCommon do
   
   
   alias Krug.MapUtil
+  alias Krug.EtsUtil
   alias StorjDB.DatabaseSchema
   alias StorjDB.StorjFileDrop
   alias StorjDB.StorjFileStore
   alias StorjDB.StorjFileRead
+  alias StorjDB.StorjSynchronizeTo
   
   
   def first_of_list(list) do
@@ -107,6 +109,8 @@ defmodule StorjDB.DataCommon do
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
       |> StorjFileStore.store_file(filename,content)
+    table_name
+      |> mark_to_synchronize(file_number)
     schema_info
       |> DatabaseSchema.update_schema_by_schema_info()
   end
@@ -128,6 +132,8 @@ defmodule StorjDB.DataCommon do
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
       |> StorjFileStore.store_file(filename,content)
+    table_name
+      |> mark_to_synchronize(file_number)
     cond do
       (nil == schema_info)
         -> :ok
@@ -167,7 +173,18 @@ defmodule StorjDB.DataCommon do
     filename = "#{table_name}_#{file_number}.txt"
     bucket_name
       |> StorjFileDrop.drop_file(filename)
+    table_name
+      |> mark_to_synchronize(file_number)
     drop_table_files(file_number - 1,bucket_name,table_name)
+  end
+  
+  #==================================================
+  
+  defp mark_to_synchronize(table_name,file_number) do
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
+    "#{table_name}_#{file_number}.txt"
+      |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
 end

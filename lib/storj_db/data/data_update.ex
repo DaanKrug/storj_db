@@ -5,7 +5,6 @@ defmodule StorjDB.DataUpdate do
   alias Krug.EtsUtil
   alias Krug.MapUtil
   alias StorjDB.DataCommon
-  alias StorjDB.StorjSynchronizeTo
   
   
   def update(table_name,object) do
@@ -18,9 +17,6 @@ defmodule StorjDB.DataUpdate do
                 |> DataCommon.read_table_objects(table_name,file_number)
     objects_to_update = objects
                         |> prepare_object_to_update(object,id)
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
-    StorjSynchronizeTo.mark_to_synchronize(table_name)
     bucket_name
       |> DataCommon.update_table_objects(table_name,objects_to_update,file_number,nil)
   end

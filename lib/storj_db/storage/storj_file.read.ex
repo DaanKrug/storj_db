@@ -12,7 +12,7 @@ defmodule StorjDB.StorjFileRead do
     synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_read_#{filename}")
     EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
     cond do
-      (synchronize != true or only_local_disk == 1 or only_local_disk == "1")
+      (!synchronize or only_local_disk == 1 or only_local_disk == "1")
         -> filename
              |> TempFileService.read_file()
       true
@@ -22,8 +22,6 @@ defmodule StorjDB.StorjFileRead do
   end
   
   defp download_file(bucket_name,filename) do
-    "download_file => #{filename}"
-      |> IO.inspect()
     file_path = filename
                   |> TempFileService.get_temp_file()
     storj_link = "sj://#{bucket_name}/#{filename}"

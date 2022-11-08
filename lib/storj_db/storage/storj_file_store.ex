@@ -25,7 +25,7 @@ defmodule StorjDB.StorjFileStore do
     synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_store_#{filename}")
     EtsUtil.remove_from_cache(:storj_db_app,"synchronize_store_#{filename}")
     cond do
-      (synchronize != true or only_local_disk == 1 or only_local_disk == "1")
+      (!synchronize or only_local_disk == 1 or only_local_disk == "1")
         -> true
       true
         -> bucket_name
@@ -34,8 +34,6 @@ defmodule StorjDB.StorjFileStore do
   end
   
   defp synchronize_file2(bucket_name,filename) do
-    "store file => #{filename}"
-      |> IO.inspect()
     file_path = filename
                   |> TempFileService.get_temp_file(true)
     executable = "uplink"

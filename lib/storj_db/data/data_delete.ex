@@ -6,7 +6,6 @@ defmodule StorjDB.DataDelete do
   alias Krug.MapUtil
   alias StorjDB.DataCommon
   alias StorjDB.DataRestore
-  alias StorjDB.StorjSynchronizeTo
   
   
   def drop_table(table_name) do
@@ -49,9 +48,6 @@ defmodule StorjDB.DataDelete do
       last_id,
       false
     ]
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
-    StorjSynchronizeTo.mark_to_synchronize(table_name)
     bucket_name
       |> DataCommon.update_table_objects(table_name,objects_to_update,file_number,schema_info)
   end

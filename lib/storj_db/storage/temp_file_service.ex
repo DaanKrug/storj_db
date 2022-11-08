@@ -54,7 +54,7 @@ defmodule StorjDB.TempFileService do
     content = filename
                 |> read_file()
     file_path
-      |> FileUtil.write("#{content}")
+      |> FileUtil.write("#{content}") 
     file_path
   end
   

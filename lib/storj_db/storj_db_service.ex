@@ -29,6 +29,10 @@ defmodule StorjDB.Service do
     {:ok, []}
   end
   
+  def cleanup_all() do
+    StorjSynchronizeTo.cleanup_all()
+  end
+  
   def synchronize_all() do
     StorjSynchronizeTo.synchronize_all()
   end

@@ -4,7 +4,6 @@ defmodule StorjDB.DatabaseSchema do
 
   alias Krug.MapUtil
   alias Krug.EtsUtil
-  alias StorjDB.StorjFileDrop
   alias StorjDB.StorjFileStore
   alias StorjDB.StorjFileRead
   alias StorjDB.ConnectionConfig
@@ -19,9 +18,8 @@ defmodule StorjDB.DatabaseSchema do
   end
   
   def drop_database_schema() do
-    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
-    filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-    StorjFileDrop.drop_file(bucket_name,filename)
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_drop()
   end
   
   def remove_table_from_schema(table_name) do 
@@ -32,9 +30,6 @@ defmodule StorjDB.DatabaseSchema do
     database_schema
       |> MapUtil.replace(:tables, tables)
       |> write_database_schema()
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
-    StorjSynchronizeTo.mark_to_synchronize(table_name)
   end
   
   def read_table_schema(table_name,nil_if_nil \\ false) do
@@ -62,8 +57,6 @@ defmodule StorjDB.DatabaseSchema do
     ] = schema_info
     table_name
       |> update_schema(rows_perfile,last_file,total_rows, last_id, return_table)
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
   defp update_schema(table_name,rows_perfile,last_file,total_rows, last_id, return_table) do
@@ -71,8 +64,6 @@ defmodule StorjDB.DatabaseSchema do
                         |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
     database_schema
       |> write_database_schema()
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
     cond do
       (return_table)
         -> database_schema 
@@ -88,6 +79,8 @@ defmodule StorjDB.DatabaseSchema do
     content = database_schema 
                 |> Poison.encode!()           
     StorjFileStore.store_file(bucket_name,filename,content)
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
   defp read_database_schema() do
@@ -218,16 +211,39 @@ defmodule StorjDB.DatabaseSchema do
               |> hd()
     cond do
       (table |> MapUtil.get(:table_name) == table_name)
-        -> tables 
-             |> tl()
-             |> remove_table(table_name,tables_new) 
+        -> table
+             |> remove_table3(tables,table_name,tables_new)
       true
         -> tables 
              |> tl()
              |> remove_table(table_name,[table | tables_new]) 
     end
   end
+  
+  defp remove_table3(table,tables,table_name,tables_new) do
+    table 
+      |> MapUtil.get(:last_file)
+      |> mark_table_files_to_remove(table_name)
+    tables 
+      |> tl()
+      |> remove_table(table_name,tables_new)
+  end
+  
+  defp mark_table_files_to_remove(file_number,table_name) do
+    cond do
+      (file_number < 0)
+        -> :ok
+      true
+        -> file_number
+             |> mark_table_files_to_remove2(table_name)
+    end
+  end
+  
+  defp mark_table_files_to_remove2(file_number,table_name) do
+    "#{table_name}_#{file_number}.txt"
+      |> StorjSynchronizeTo.mark_to_drop()
+    mark_table_files_to_remove(file_number - 1,table_name)
+  end
 
 end
-
 
