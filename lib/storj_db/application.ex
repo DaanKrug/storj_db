@@ -10,7 +10,8 @@ defmodule StorjDB.Application do
   
   def children() do
   	[
-  	  StorjDB.Service
+  	  StorjDB.Service,
+  	  StorjDB.StorjMonitorTaskStarter
   	]
   end
   

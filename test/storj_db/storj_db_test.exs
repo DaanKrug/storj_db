@@ -4,8 +4,8 @@ defmodule StorjDBTest do
 
   doctest StorjDB
   
-  @time_sleep 3000
-  @use_debugg false
+  @time_sleep 20000
+  @use_debugg true
   
   alias StorjDB
   alias Krug.MapUtil

@@ -4,7 +4,7 @@ defmodule StorjDB.StorjFileDrop do
   
   alias Krug.EtsUtil
   alias StorjDB.TempFileService
-  alias StorjDB.StorjFileDebugg
+  # alias StorjDB.StorjFileDebugg
 
 
   def drop_file(bucket_name,filename) do

@@ -3,7 +3,7 @@ defmodule StorjDB.StorjFileRead do
   @moduledoc false
   
   alias Krug.EtsUtil
-  alias StorjDB.StorjFileDebugg
+  # alias StorjDB.StorjFileDebugg
   alias StorjDB.TempFileService
   
   

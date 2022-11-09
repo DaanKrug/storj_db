@@ -7,7 +7,7 @@ defmodule StorjDB.DatabaseSchema do
   alias StorjDB.StorjFileStore
   alias StorjDB.StorjFileRead
   alias StorjDB.ConnectionConfig
-  alias StorjDB.StorjFileDebugg
+  # alias StorjDB.StorjFileDebugg
   alias StorjDB.StorjSynchronizeTo
   
 
