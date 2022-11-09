@@ -87,8 +87,8 @@ defmodule StorjDB.DatabaseSchema do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     database_schema = StorjFileRead.read_file(bucket_name,filename)
-    database_schema 
-      |> StorjFileDebugg.info()
+    # database_schema 
+    #  |> StorjFileDebugg.info()
     cond do
       (nil == database_schema or database_schema == "")
         -> new()

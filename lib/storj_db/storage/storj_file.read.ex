@@ -28,8 +28,8 @@ defmodule StorjDB.StorjFileRead do
     executable = "uplink"
     arguments = ["cp",storj_link,file_path]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    ["download_file",result, exit_status] 
-      |> StorjFileDebugg.info()
+    #["download_file",result, exit_status] 
+    #  |> StorjFileDebugg.info()
     file_path
       |> TempFileService.drop_temp_file()
     cond do

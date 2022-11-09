@@ -4,12 +4,20 @@ defmodule StorjDBTest do
 
   doctest StorjDB
   
+  @time_sleep 3000
+  @use_debugg false
+  
   alias StorjDB
   alias Krug.MapUtil
-  # alias Krug.EtsUtil
+  alias Krug.EtsUtil
+  alias StorjDB.StorjFileDebugg
   
   
   test "[create(...) | load_by_id(...) - 1]" do
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",@use_debugg)
+    "\n\n\n Test 001"
+      |> StorjFileDebugg.info()
+    
     "trutas" 
           |> StorjDB.drop_table()
     StorjDB.reset_data_dir()
@@ -28,7 +36,6 @@ defmodule StorjDBTest do
     assert (tt1 |> MapUtil.get(:nome)) == (t1 |> MapUtil.get(:nome))
     assert (tt1 |> MapUtil.get(:found_on_file_number)) == 0
     
-    # EtsUtil.store_in_cache(:storj_db_app,"debugg",true)
     synchronized = StorjDB.synchronize_all()
     assert synchronized == true
     
@@ -42,10 +49,17 @@ defmodule StorjDBTest do
     synchronized = StorjDB.cleanup_all()
     assert synchronized == true
     
-    # EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    @time_sleep 
+      |> :timer.sleep()
+      
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
   
   test "[create(...) | load_by_id(...) - 2]" do
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",@use_debugg)
+    "\n\n\n Test 002"
+      |> StorjFileDebugg.info()
+    
     t1 = %{
       nome: "truta 1",
       qualidade: "Q3"
@@ -122,9 +136,18 @@ defmodule StorjDBTest do
     
     synchronized = StorjDB.cleanup_all()
     assert synchronized == true
+    
+    @time_sleep 
+      |> :timer.sleep()
+      
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
   
   test "[load_all(...) - 1]" do
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",@use_debugg)
+    "\n\n\n Test 003"
+      |> StorjFileDebugg.info()
+    
     t1 = %{
       nome: "truta 1",
       qualidade: "Q3"
@@ -211,9 +234,18 @@ defmodule StorjDBTest do
     
     synchronized = StorjDB.cleanup_all()
     assert synchronized == true
+    
+    @time_sleep 
+      |> :timer.sleep()
+      
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
     
   test "[load_all(...) - 2]" do
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",@use_debugg)
+    "\n\n\n Test 004"
+      |> StorjFileDebugg.info()
+    
     "trutas" 
           |> StorjDB.drop_table()
     "carnes" 
@@ -366,9 +398,18 @@ defmodule StorjDBTest do
     
     synchronized = StorjDB.cleanup_all()
     assert synchronized == true
+    
+    @time_sleep 
+      |> :timer.sleep()
+      
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
     
   test "[delete(...) | delete_by_id(...) | read_table_info(...) | drop_table(...) ]" do
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",@use_debugg)
+    "\n\n\n Test 005"
+      |> StorjFileDebugg.info()
+    
     "trutas" 
           |> StorjDB.drop_table()
     "carnes" 
@@ -426,6 +467,9 @@ defmodule StorjDBTest do
     assert total_rows == 1
     assert last_id == (tt3 |> MapUtil.get(:id))
     
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
     "trutas" 
           |> StorjDB.drop_table()
     
@@ -441,15 +485,17 @@ defmodule StorjDBTest do
     assert rows_perfile == nil
     assert total_rows == nil
     assert last_id == nil  
-    
-    synchronized = StorjDB.synchronize_all()
-    assert synchronized == true
-    
+     
     "trutas" 
           |> StorjDB.drop_table()
     
     synchronized = StorjDB.cleanup_all()
     assert synchronized == true
+    
+    @time_sleep 
+      |> :timer.sleep()
+      
+    EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
   end
   
 end

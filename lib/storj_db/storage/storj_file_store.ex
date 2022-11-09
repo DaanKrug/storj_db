@@ -9,8 +9,8 @@ defmodule StorjDB.StorjFileStore do
   
   def store_file(bucket_name,filename,content) do
     pid = TempFileService.write_file(filename,content)
-    [bucket_name,filename,content,pid] 
-      |> StorjFileDebugg.info()
+    #[bucket_name,filename,content,pid] 
+    #  |> StorjFileDebugg.info()
     cond do
       (nil == pid)
         -> false
