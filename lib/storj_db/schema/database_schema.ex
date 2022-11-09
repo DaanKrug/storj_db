@@ -83,7 +83,7 @@ defmodule StorjDB.DatabaseSchema do
       |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
-  defp read_database_schema() do
+  def read_database_schema() do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     database_schema = StorjFileRead.read_file(bucket_name,filename)

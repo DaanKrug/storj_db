@@ -3,7 +3,7 @@ defmodule StorjDB.StorjFileStore do
   @moduledoc false
   
   alias Krug.EtsUtil
-  alias StorjDB.StorjFileDebugg
+  # alias StorjDB.StorjFileDebugg
   alias StorjDB.TempFileService
   
   
@@ -39,8 +39,8 @@ defmodule StorjDB.StorjFileStore do
     executable = "uplink"
     arguments = ["cp",file_path,"sj://#{bucket_name}"]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    ["store_file3",result, exit_status] 
-      |> StorjFileDebugg.info()
+    #["store_file3",result, exit_status] 
+    #  |> StorjFileDebugg.info()
     filename
       |> TempFileService.drop_temp_file()
     cond do

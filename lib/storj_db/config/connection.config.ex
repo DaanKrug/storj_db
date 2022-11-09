@@ -8,6 +8,8 @@ defmodule StorjDB.ConnectionConfig do
   alias Krug.StringUtil
   alias Krug.MapUtil
   alias StorjDB.StorjFileDebugg
+  alias StorjDB.StorjSynchronizeFrom
+  alias StorjDB.DatabaseSchema
   
   
   @config_filename "storj_db.config.txt"
@@ -37,7 +39,7 @@ defmodule StorjDB.ConnectionConfig do
              |> init_connection_sample()
       true
         -> content 
-             |> init_connection_to_ets()
+             |> init_connection_to_ets(true)
     end
   end
   
@@ -75,7 +77,7 @@ defmodule StorjDB.ConnectionConfig do
     base_path 
       |> write_path_info()
     content
-      |> init_connection_to_ets()
+      |> init_connection_to_ets(false)
   end
   
   defp write_path_info(base_path) do
@@ -106,7 +108,7 @@ defmodule StorjDB.ConnectionConfig do
       |> IO.inspect()
   end
   
-  defp init_connection_to_ets(content) do
+  defp init_connection_to_ets(content,init_tables) do
     list = content 
              |> StringUtil.split("\n")
     bucket_name = "bucket_name" 
@@ -121,7 +123,43 @@ defmodule StorjDB.ConnectionConfig do
     EtsUtil.store_in_cache(:storj_db_app,"database_schema",database_schema)
     EtsUtil.store_in_cache(:storj_db_app,"only_local_disk",only_local_disk)
     EtsUtil.store_in_cache(:storj_db_app,"debugg",debugg)
-    :ok
+    cond do
+      (!init_tables)
+        -> :ok
+      true
+        -> bucket_name
+             |> initialize_tables(database_schema)
+    end
+  end
+  
+  defp initialize_tables(bucket_name,database_schema) do
+    EtsUtil.store_in_cache(:storj_db_app,"synchronize_read_#{database_schema}",true)
+    database_schema
+      |> StorjSynchronizeFrom.mark_to_synchronize()
+    DatabaseSchema.read_database_schema()
+      |> MapUtil.get(:tables)
+      |> initialize_tables2()
+    bucket_name
+      |> StorjSynchronizeFrom.run_synchronization(true)  
+  end
+  
+  defp initialize_tables2(tables) do
+    cond do
+      (Enum.empty?(tables))
+        -> :ok
+      true
+        -> initialize_tables3(tables)
+    end
+  end
+  
+  defp initialize_tables3(tables) do
+    table = tables
+              |> hd()
+    "#{table |> MapUtil.get(:table_name)}_#{table |> MapUtil.get(:last_file)}.txt"
+      |> StorjSynchronizeFrom.mark_to_synchronize()
+    tables
+      |> tl()
+      |> initialize_tables2()
   end
   
   def read_rows_perfile_if_undefined(table_name,rows_perfile) do

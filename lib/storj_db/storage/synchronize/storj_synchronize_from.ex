@@ -5,13 +5,47 @@ defmodule StorjDB.StorjSynchronizeFrom do
   @list_name "synchronize_read_list_table_names"
   
   alias Krug.EtsUtil
+  alias StorjDB.StorjFileRead
   
   
-  
-  def synchronize_all() do
-    # synchronize_file(bucket_name,filename)
+  def run_synchronization(bucket_name,result) do
+    read_sync_list()
+      |> run_synchronization2(bucket_name,result)
   end
   
+  defp run_synchronization2(sync_list,bucket_name,result) do
+    cond do
+      (Enum.empty?(sync_list))
+        -> result
+      true
+        -> sync_list
+             |> dispatch_all(bucket_name,result)
+    end
+  end
+  
+  defp dispatch_all(sync_list,bucket_name,result) do
+    filename = sync_list
+                 |> hd()
+    result = filename
+               |> synchronize_single_file(bucket_name,result)
+    sync_list
+      |> tl()
+      |> run_synchronization2(bucket_name,result)
+  end
+  
+  defp synchronize_single_file(filename,bucket_name,result) do
+    result2 = bucket_name
+                |> StorjFileRead.synchronize_file(filename,false)
+    cond do
+      (result2 and result)
+        -> true
+      (!result2)
+        -> filename
+             |> mark_to_synchronize()
+      true
+        -> false
+    end
+  end
   
   def mark_to_synchronize(filename) do
     sync_list = read_sync_list()
