@@ -16,6 +16,15 @@ defmodule StorjDB.DatabaseSchema do
     }
   end
   
+  def synchronize_database_schema() do
+    bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
+    filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+    filename
+      |> StorjSynchronizeTo.mark_to_synchronize()
+    StorjFileStore.synchronize_file(bucket_name,filename)
+    "synchronize_database_schema => " |> IO.inspect()
+  end
+  
   def drop_database_schema() do
     EtsUtil.read_from_cache(:storj_db_app,"database_schema")
       |> StorjSynchronizeTo.mark_to_drop()
@@ -63,8 +72,6 @@ defmodule StorjDB.DatabaseSchema do
                         |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
     database_schema
       |> write_database_schema()
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
     cond do
       (return_table)
         -> database_schema 

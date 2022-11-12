@@ -171,18 +171,21 @@ defmodule StorjDB.DataCommon do
   
   defp drop_table_files2(file_number,bucket_name,table_name) do
     filename = "#{table_name}_#{file_number}.txt"
+    table_name
+      |> mark_to_drop(file_number)
     bucket_name
       |> StorjFileDrop.drop_file(filename)
-    table_name
-      |> mark_to_synchronize(file_number)
     drop_table_files(file_number - 1,bucket_name,table_name)
   end
   
   #==================================================
   
+  defp mark_to_drop(table_name,file_number) do
+    "#{table_name}_#{file_number}.txt"
+      |> StorjSynchronizeTo.mark_to_drop()
+  end
+  
   defp mark_to_synchronize(table_name,file_number) do
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
     "#{table_name}_#{file_number}.txt"
       |> StorjSynchronizeTo.mark_to_synchronize()
   end

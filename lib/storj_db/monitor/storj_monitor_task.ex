@@ -2,6 +2,7 @@ defmodule StorjDB.StorjMonitorTask do
  
   use Task
   alias StorjDB.StorjFileDebugg
+  alias StorjDB.DatabaseSchema
   
   @initialization_timer 1000
   
@@ -20,7 +21,9 @@ defmodule StorjDB.StorjMonitorTask do
       "\n\n\n StorjMonitorTask run_loop"
         |> StorjFileDebugg.info()
       StorjDB.synchronize_all()
-      :timer.sleep(10000)
+      StorjDB.cleanup_all()
+      DatabaseSchema.synchronize_database_schema()
+      :timer.sleep(5000)
       run_loop()
     rescue
       _ -> rescue_run_loop()

@@ -33,6 +33,8 @@ defmodule StorjDB.StorjFileDrop do
     executable = "uplink"
     arguments = ["rm",storj_link]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
+    [result, exit_status]
+      |> IO.inspect()
     cond do
       (exit_status != 0) 
         -> false

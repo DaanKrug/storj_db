@@ -37,7 +37,6 @@ defmodule StorjDB.StorjFileRead do
     file_path
       |> TempFileService.drop_temp_file()
     EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
-    ["result",result] |> IO.inspect()
     result
   end
   
