@@ -3,7 +3,7 @@ defmodule StorjDB.StorjMonitorTask do
   use Task
   alias StorjDB.StorjFileDebugg
   
-  @initialization_timer 100000
+  @initialization_timer 1000
   
  
   def start_link(opts) do
