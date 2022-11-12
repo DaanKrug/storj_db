@@ -11,7 +11,7 @@ defmodule StorjDB.ConnectionConfigTest do
     "./storj_db.config.txt" 
       |> FileUtil.drop_file()
     result = ConnectionConfig.config_connection()
-    assert result == :ok
+    assert result == true
   end
   
 end

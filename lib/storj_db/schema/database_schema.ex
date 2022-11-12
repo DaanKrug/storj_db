@@ -7,7 +7,6 @@ defmodule StorjDB.DatabaseSchema do
   alias StorjDB.StorjFileStore
   alias StorjDB.StorjFileRead
   alias StorjDB.ConnectionConfig
-  # alias StorjDB.StorjFileDebugg
   alias StorjDB.StorjSynchronizeTo
   
 
@@ -64,6 +63,8 @@ defmodule StorjDB.DatabaseSchema do
                         |> update_schema2(table_name,rows_perfile,last_file,total_rows,last_id)
     database_schema
       |> write_database_schema()
+    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
+      |> StorjSynchronizeTo.mark_to_synchronize()
     cond do
       (return_table)
         -> database_schema 
@@ -79,16 +80,12 @@ defmodule StorjDB.DatabaseSchema do
     content = database_schema 
                 |> Poison.encode!()           
     StorjFileStore.store_file(bucket_name,filename,content)
-    EtsUtil.read_from_cache(:storj_db_app,"database_schema")
-      |> StorjSynchronizeTo.mark_to_synchronize()
   end
   
   def read_database_schema() do
     bucket_name = EtsUtil.read_from_cache(:storj_db_app,"bucket_name")
     filename = EtsUtil.read_from_cache(:storj_db_app,"database_schema")
     database_schema = StorjFileRead.read_file(bucket_name,filename)
-    # database_schema 
-    #  |> StorjFileDebugg.info()
     cond do
       (nil == database_schema or database_schema == "")
         -> new()

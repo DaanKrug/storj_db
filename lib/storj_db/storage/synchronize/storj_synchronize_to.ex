@@ -4,7 +4,6 @@ defmodule StorjDB.StorjSynchronizeTo do
   
 
   alias Krug.EtsUtil
-  # alias StorjDB.StorjFileDebugg
   alias StorjDB.StorjSynchronizeToTask
   
   
@@ -23,8 +22,6 @@ defmodule StorjDB.StorjSynchronizeTo do
   end
   
   def synchronize_all(for_drop \\ false) do
-    #"\n\n\n ===   sync => #{StorjSynchronizeToTask.is_synchronizing?()} =========== "
-    #  |> StorjFileDebugg.info()
     cond do
       (StorjSynchronizeToTask.is_synchronizing?())
         -> true

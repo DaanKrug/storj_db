@@ -4,7 +4,6 @@ defmodule StorjDB.StorjFileDrop do
   
   alias Krug.EtsUtil
   alias StorjDB.TempFileService
-  # alias StorjDB.StorjFileDebugg
 
 
   def drop_file(bucket_name,filename) do
@@ -19,10 +18,9 @@ defmodule StorjDB.StorjFileDrop do
   end
   
   def drop_file2(bucket_name,filename) do
-    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
     sinchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_drop_#{filename}")
     cond do
-      (!sinchronize or only_local_disk == 1 or only_local_disk == "1")
+      (!sinchronize)
         -> true
       true
         -> bucket_name
@@ -35,8 +33,6 @@ defmodule StorjDB.StorjFileDrop do
     executable = "uplink"
     arguments = ["rm",storj_link]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    #["drop_file3",result, exit_status] 
-    #  |> StorjFileDebugg.info()
     cond do
       (exit_status != 0) 
         -> false

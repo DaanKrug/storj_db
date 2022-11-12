@@ -4,7 +4,8 @@ defmodule StorjDBTest do
 
   doctest StorjDB
   
-  @time_sleep 20000
+  @time_sleep 5000
+  @time_sleep2 10000
   @use_debugg true
   
   alias StorjDB
@@ -53,6 +54,14 @@ defmodule StorjDBTest do
       |> :timer.sleep()
       
     EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    
+    StorjDB.create("trutas",t1)
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    @time_sleep2 
+      |> :timer.sleep()
   end
   
   test "[create(...) | load_by_id(...) - 2]" do
@@ -141,6 +150,17 @@ defmodule StorjDBTest do
       |> :timer.sleep()
       
     EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    
+    StorjDB.create("trutas",t1)
+    StorjDB.create("trutas",t2)
+    StorjDB.create("carnes",c1)
+    StorjDB.create("carnes",c2)
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    @time_sleep2 
+      |> :timer.sleep()
   end
   
   test "[load_all(...) - 1]" do
@@ -239,6 +259,17 @@ defmodule StorjDBTest do
       |> :timer.sleep()
       
     EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    
+    StorjDB.create("trutas",t1)
+    StorjDB.create("trutas",t2)
+    StorjDB.create("carnes",c1)
+    StorjDB.create("carnes",c2)
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    @time_sleep2 
+      |> :timer.sleep()
   end
     
   test "[load_all(...) - 2]" do
@@ -403,6 +434,16 @@ defmodule StorjDBTest do
       |> :timer.sleep()
       
     EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    
+    StorjDB.create("trutas",t3)
+    StorjDB.create("trutas",t4)
+    StorjDB.create("trutas",t5)
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    @time_sleep2 
+      |> :timer.sleep()
   end
     
   test "[delete(...) | delete_by_id(...) | read_table_info(...) | drop_table(...) ]" do
@@ -496,6 +537,16 @@ defmodule StorjDBTest do
       |> :timer.sleep()
       
     EtsUtil.store_in_cache(:storj_db_app,"debugg",false)
+    
+    StorjDB.create("trutas",t3)
+    StorjDB.create("trutas",t4)
+    StorjDB.create("trutas",t5)
+    
+    synchronized = StorjDB.synchronize_all()
+    assert synchronized == true
+    
+    @time_sleep2 
+      |> :timer.sleep()
   end
   
 end

@@ -3,22 +3,26 @@ defmodule StorjDB.StorjFileRead do
   @moduledoc false
   
   alias Krug.EtsUtil
-  alias StorjDB.StorjFileDebugg
+  alias Krug.FileUtil
   alias StorjDB.TempFileService
   
   
   def read_file(bucket_name,filename) do
-    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
     synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_read_#{filename}")
-    EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
     cond do
-      (!synchronize or only_local_disk == 1 or only_local_disk == "1")
+      (!synchronize)
         -> filename
-             |> TempFileService.read_file()
+             |> read_file2()
       true
         -> bucket_name
              |> synchronize_file(filename)
     end
+  end
+  
+  defp read_file2(filename) do
+    EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
+    filename
+      |> TempFileService.read_file()
   end
   
   def synchronize_file(bucket_name,filename,return_content \\ true) do
@@ -27,11 +31,17 @@ defmodule StorjDB.StorjFileRead do
     storj_link = "sj://#{bucket_name}/#{filename}"
     executable = "uplink"
     arguments = ["cp",storj_link,file_path]
-    {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    ["synchronize_file",result, exit_status] 
-      |> StorjFileDebugg.info()
+    {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)   
+    result = file_path
+               |> synchronize_file_result(exit_status,result,return_content)
     file_path
       |> TempFileService.drop_temp_file()
+    EtsUtil.remove_from_cache(:storj_db_app,"synchronize_read_#{filename}")
+    ["result",result] |> IO.inspect()
+    result
+  end
+  
+  defp synchronize_file_result(file_path,exit_status,result,return_content) do
     cond do
       (exit_status != 0 and !return_content) 
         -> false
@@ -44,9 +54,13 @@ defmodule StorjDB.StorjFileRead do
       (!return_content)
         -> true
       true 
-        -> filename
-             |> TempFileService.read_file()
+        -> file_path
+             |> FileUtil.read_file()
     end
   end
   
 end
+
+
+
+

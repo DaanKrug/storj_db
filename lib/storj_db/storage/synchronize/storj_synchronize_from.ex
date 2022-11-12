@@ -6,6 +6,7 @@ defmodule StorjDB.StorjSynchronizeFrom do
   
   alias Krug.EtsUtil
   alias StorjDB.StorjFileRead
+  alias StorjDB.TempFileService
   
   
   def run_synchronization(bucket_name,result) do
@@ -35,16 +36,23 @@ defmodule StorjDB.StorjSynchronizeFrom do
   
   defp synchronize_single_file(filename,bucket_name,result) do
     result2 = bucket_name
-                |> StorjFileRead.synchronize_file(filename,false)
+                |> StorjFileRead.synchronize_file(filename,true)
     cond do
-      (result2 and result)
-        -> true
-      (!result2)
+      (nil == result2)
         -> filename
              |> mark_to_synchronize()
+      (nil != result2 and result)
+        -> filename
+             |> write_to_tempfile(result2)
       true
         -> false
     end
+  end
+  
+  defp write_to_tempfile(filename,content) do
+    pid = filename
+            |> TempFileService.write_file(content)
+    nil != pid
   end
   
   def mark_to_synchronize(filename) do

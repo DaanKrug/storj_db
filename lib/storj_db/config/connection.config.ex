@@ -69,7 +69,6 @@ defmodule StorjDB.ConnectionConfig do
     content = """
               bucket_name=sample-database
               database_schema=#{database_schema_path}
-              only_local_disk=0
               debugg=0
               """
     "#{base_path}/#{@config_filename}" 
@@ -115,17 +114,14 @@ defmodule StorjDB.ConnectionConfig do
                      |> StructUtil.get_key_par_value_from_list(list)
     database_schema = "database_schema" 
                         |> StructUtil.get_key_par_value_from_list(list)
-    only_local_disk = "only_local_disk" 
-                        |> StructUtil.get_key_par_value_from_list(list)
     debugg = "debugg" 
                |> StructUtil.get_key_par_value_from_list(list)
     EtsUtil.store_in_cache(:storj_db_app,"bucket_name",bucket_name)
     EtsUtil.store_in_cache(:storj_db_app,"database_schema",database_schema)
-    EtsUtil.store_in_cache(:storj_db_app,"only_local_disk",only_local_disk)
     EtsUtil.store_in_cache(:storj_db_app,"debugg",debugg)
     cond do
       (!init_tables)
-        -> :ok
+        -> true
       true
         -> bucket_name
              |> initialize_tables(database_schema)
@@ -134,9 +130,8 @@ defmodule StorjDB.ConnectionConfig do
   
   defp initialize_tables(bucket_name,database_schema) do
     EtsUtil.store_in_cache(:storj_db_app,"synchronize_read_#{database_schema}",true)
-    database_schema
-      |> StorjSynchronizeFrom.mark_to_synchronize()
-    DatabaseSchema.read_database_schema()
+    database_schema = DatabaseSchema.read_database_schema()
+    database_schema  
       |> MapUtil.get(:tables)
       |> initialize_tables2()
     bucket_name

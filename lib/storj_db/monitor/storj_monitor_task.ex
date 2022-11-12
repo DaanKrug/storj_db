@@ -3,13 +3,15 @@ defmodule StorjDB.StorjMonitorTask do
   use Task
   alias StorjDB.StorjFileDebugg
   
+  @initialization_timer 100000
+  
  
   def start_link(opts) do
     Task.start_link(__MODULE__, :run, [opts])
   end
 
   def run(_opts) do
-  	:timer.sleep(1000)
+  	:timer.sleep(@initialization_timer)
     run_loop()
   end
   

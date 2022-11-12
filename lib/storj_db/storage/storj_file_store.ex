@@ -3,14 +3,11 @@ defmodule StorjDB.StorjFileStore do
   @moduledoc false
   
   alias Krug.EtsUtil
-  # alias StorjDB.StorjFileDebugg
   alias StorjDB.TempFileService
   
   
   def store_file(bucket_name,filename,content) do
     pid = TempFileService.write_file(filename,content)
-    #[bucket_name,filename,content,pid] 
-    #  |> StorjFileDebugg.info()
     cond do
       (nil == pid)
         -> false
@@ -21,11 +18,10 @@ defmodule StorjDB.StorjFileStore do
   end
   
   def synchronize_file(bucket_name,filename) do
-    only_local_disk = EtsUtil.read_from_cache(:storj_db_app,"only_local_disk")
     synchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_store_#{filename}")
     EtsUtil.remove_from_cache(:storj_db_app,"synchronize_store_#{filename}")
     cond do
-      (!synchronize or only_local_disk == 1 or only_local_disk == "1")
+      (!synchronize)
         -> true
       true
         -> bucket_name
@@ -39,8 +35,6 @@ defmodule StorjDB.StorjFileStore do
     executable = "uplink"
     arguments = ["cp",file_path,"sj://#{bucket_name}"]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    #["store_file3",result, exit_status] 
-    #  |> StorjFileDebugg.info()
     filename
       |> TempFileService.drop_temp_file()
     cond do
