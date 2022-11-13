@@ -3,16 +3,14 @@ defmodule StorjDB.StorjMonitorTask do
   use Task
   alias StorjDB.StorjFileDebugg
   alias StorjDB.DatabaseSchema
-  
-  @initialization_timer 1000
-  
+  alias StorjDB.ConnectionConfig
  
   def start_link(opts) do
     Task.start_link(__MODULE__, :run, [opts])
   end
 
   def run(_opts) do
-  	:timer.sleep(@initialization_timer)
+  	StorjDB.ConnectionConfig.ok_operation()
     run_loop()
   end
   
@@ -23,7 +21,7 @@ defmodule StorjDB.StorjMonitorTask do
       StorjDB.synchronize_all()
       StorjDB.cleanup_all()
       DatabaseSchema.synchronize_database_schema()
-      :timer.sleep(5000)
+      :timer.sleep(10000)
       run_loop()
     rescue
       _ -> rescue_run_loop()

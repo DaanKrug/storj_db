@@ -22,7 +22,6 @@ defmodule StorjDB.DatabaseSchema do
     filename
       |> StorjSynchronizeTo.mark_to_synchronize()
     StorjFileStore.synchronize_file(bucket_name,filename)
-    "synchronize_database_schema => " |> IO.inspect()
   end
   
   def drop_database_schema() do

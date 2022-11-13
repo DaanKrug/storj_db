@@ -48,20 +48,16 @@ defmodule StorjDB.StorjSynchronizeToTask do
   end
   
   def run_synchronization(sync_list,bucket_name,for_drop) do
-    Task.async(
-	  fn -> 
-	    result = sync_list
-                   |> dispatch_all(bucket_name,for_drop,true)
-        cond do
-          (result)
-            -> false
-                 |> set_synchronizing()
-          true
-            -> sync_list
-                 |> run_synchronization(bucket_name,for_drop)
-        end
-	  end
-	)
+	result = sync_list
+               |> dispatch_all(bucket_name,for_drop,true)
+    cond do
+      (result)
+        -> false
+             |> set_synchronizing()
+      true
+        -> sync_list
+             |> run_synchronization(bucket_name,for_drop)
+    end
   end
   
   defp dispatch_all(sync_list,bucket_name,for_drop,result) do

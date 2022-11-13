@@ -4,9 +4,7 @@ defmodule StorjDB.DataCommon do
   
   
   alias Krug.MapUtil
-  alias Krug.EtsUtil
   alias StorjDB.DatabaseSchema
-  alias StorjDB.StorjFileDrop
   alias StorjDB.StorjFileStore
   alias StorjDB.StorjFileRead
   alias StorjDB.StorjSynchronizeTo
@@ -170,11 +168,8 @@ defmodule StorjDB.DataCommon do
   end
   
   defp drop_table_files2(file_number,bucket_name,table_name) do
-    filename = "#{table_name}_#{file_number}.txt"
     table_name
       |> mark_to_drop(file_number)
-    bucket_name
-      |> StorjFileDrop.drop_file(filename)
     drop_table_files(file_number - 1,bucket_name,table_name)
   end
   

@@ -121,7 +121,7 @@ defmodule StorjDB.ConnectionConfig do
     EtsUtil.store_in_cache(:storj_db_app,"debugg",debugg)
     cond do
       (!init_tables)
-        -> true
+        -> set_ok_operation()
       true
         -> bucket_name
              |> initialize_tables(database_schema)
@@ -130,12 +130,14 @@ defmodule StorjDB.ConnectionConfig do
   
   defp initialize_tables(bucket_name,database_schema) do
     EtsUtil.store_in_cache(:storj_db_app,"synchronize_read_#{database_schema}",true)
+    set_ok_operation()
     database_schema = DatabaseSchema.read_database_schema()
     database_schema  
       |> MapUtil.get(:tables)
       |> initialize_tables2()
     bucket_name
       |> StorjSynchronizeFrom.run_synchronization(true)  
+    
   end
   
   defp initialize_tables2(tables) do
@@ -201,6 +203,26 @@ defmodule StorjDB.ConnectionConfig do
       true
         -> table_rows
     end
+  end
+  
+  defp set_ok_operation() do
+    EtsUtil.store_in_cache(:storj_db_app,"OK",true)
+    true
+  end
+  
+  def ok_operation() do
+    ok = EtsUtil.read_from_cache(:storj_db_app,"OK")
+    cond do
+      (nil == ok)
+        -> ok_operation2()
+      true
+        -> true
+    end
+  end
+  
+  defp ok_operation2() do
+    :timer.sleep(1000)
+    ok_operation()
   end
  
 end

@@ -17,7 +17,7 @@ defmodule StorjDB.StorjFileDrop do
     end
   end
   
-  def drop_file2(bucket_name,filename) do
+  defp drop_file2(bucket_name,filename) do
     sinchronize = EtsUtil.read_from_cache(:storj_db_app,"synchronize_drop_#{filename}")
     cond do
       (!sinchronize)
@@ -33,8 +33,6 @@ defmodule StorjDB.StorjFileDrop do
     executable = "uplink"
     arguments = ["rm",storj_link]
     {result, exit_status} = System.cmd(executable, arguments, stderr_to_stdout: true)
-    [result, exit_status]
-      |> IO.inspect()
     cond do
       (exit_status != 0) 
         -> false
