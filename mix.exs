@@ -6,7 +6,7 @@ defmodule StorjDB.MixProject do
   def project do
     [
       app: :storj_db,
-      version: "0.0.4",
+      version: "0.0.5",
       elixir: "~> 1.13",
       source_url: @project_url,
       homepage_url: @project_url,
